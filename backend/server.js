@@ -15,6 +15,27 @@ import progressRoutes from './routes/progress.js';
 dotenv.config();
 
 const app = express();
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+    credentials: true,
+  }),
+);
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'dev-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: false, // in Produktion auf true + HTTPS
+      sameSite: 'lax', // bei Frontend auf anderer Domain evtl. 'none'
+    },
+  }),
+);
 
 app.use(
   cors({

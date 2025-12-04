@@ -125,6 +125,9 @@ const chaptersWithProgress = computed(() => {
 
 <template>
   <div class="page">
+    <div class="page-logo">
+      <img src="../assets/images/logoBrand.png" alt="HTL FireCourse Logo" class="logo" />
+    </div>
     <h1 class="page-title">Kapitelübersicht</h1>
 
     <p v-if="chapterStore.loading || loadingProgress" class="info">
@@ -197,6 +200,16 @@ const chaptersWithProgress = computed(() => {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.02em;
+}
+.page-logo {
+  position: absolute;
+  top: 16px;
+  left: 24px;
+}
+
+.logo {
+  height: 80px;
+  display: block;
 }
 
 .info {
@@ -281,13 +294,15 @@ const chaptersWithProgress = computed(() => {
   position: relative;
   z-index: 1;
   padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
 }
 
 .chapter-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
@@ -310,7 +325,7 @@ const chaptersWithProgress = computed(() => {
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  flex-shrink: 0;
+  align-self: flex-start;
 }
 
 .status-dot {
@@ -342,15 +357,15 @@ const chaptersWithProgress = computed(() => {
   font-size: 0.95rem;
   line-height: 1.6;
   color: #94a3b8;
-  margin-bottom: 24px;
-  min-height: 48px;
+  margin-bottom: auto;
+  flex-grow: 1;
 }
-
 .chapter-footer {
   display: flex;
   justify-content: flex-end;
   padding-top: 16px;
   border-top: 1px solid rgba(148, 163, 184, 0.1);
+  margin-top: auto;
 }
 
 .chapter-action {
@@ -361,13 +376,14 @@ const chaptersWithProgress = computed(() => {
   font-weight: 600;
   color: #60a5fa;
   transition: gap 0.2s ease;
+  line-height: 1;
 }
-
 .chapter-card:hover .chapter-action {
   gap: 12px;
 }
 
 .chapter-action svg {
+  flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 

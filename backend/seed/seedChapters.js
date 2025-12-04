@@ -1,31 +1,39 @@
+// seed/seedChapters.js
 import Chapter from '../models/chapters.js';
 import ChapterSlide from '../models/ChapterSlide.js';
+import UserProgress from '../models/UserProgress.js';
 import { chaptersSeedData } from './chaptersData.js';
 
-export async function seedChapters() {
-  const existing = await Chapter.count();
-  if (existing > 0) {
-    console.log('📘 Chapters already exist, skipping seeding.');
-    return;
-  }
+export const seedChapters = async () => {
+  console.log('🌱 Seeding chapters…');
 
-  console.log('📘 Seeding chapters & slides …');
+  // Alles löschen – KEIN TRUNCATE, nur normales DELETE
+  await ChapterSlide.destroy({ where: {} });
+  await UserProgress.destroy({ where: {} });
+  await Chapter.destroy({ where: {} });
 
-  for (const chapterData of chaptersSeedData) {
-    const { slides, ...chapterFields } = chapterData;
+  // Neu aufbauen
+  for (const chap of chaptersSeedData) {
+    const chapter = await Chapter.create({
+      slug: chap.slug,
+      order: chap.order,
+      title: chap.title,
+      heroImage: chap.heroImage,
+      introVideo: chap.introVideo,
+    });
 
-    const chapter = await Chapter.create(chapterFields);
-
-    if (slides && slides.length > 0) {
-      const slidesWithFk = slides.map((slide, index) => ({
-        ...slide,
+    for (const slide of chap.slides) {
+      await ChapterSlide.create({
         chapterId: chapter.id,
-        order: slide.order ?? index + 1,
-      }));
-
-      await ChapterSlide.bulkCreate(slidesWithFk);
+        type: slide.type,
+        order: slide.order,
+        title: slide.title,
+        body: slide.body,
+        imageUrl: slide.imageUrl || null,
+        videoUrl: slide.videoUrl || null,
+      });
     }
   }
 
-  console.log('✅ Chapters & slides seeded successfully.');
-}
+  console.log('✅ Chapters seeded');
+};

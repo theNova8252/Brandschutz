@@ -1,4 +1,3 @@
-// backend/models/UserProgress.js
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
 import User from './User.js';
@@ -21,6 +20,18 @@ const UserProgress = sequelize.define('UserProgress', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: { model: Chapter, key: 'id' },
+  },
+
+  // neu: hat der User das Kapitel überhaupt begonnen?
+  started: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+
+  // neu: bei welcher Slide war er zuletzt? (0-basiert)
+  lastSlideIndex: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
 
   completed: {

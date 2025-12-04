@@ -5,7 +5,14 @@
         <p class="chapter-label">Kapitel {{ chapterStore.currentChapter.order }}</p>
         <h1>{{ chapterStore.currentChapter.title }}</h1>
       </div>
-      <img class="hero-image" alt="Kapitelbild" src="../assets/images/logoBrand.png">
+
+      <div class="header-right">
+        <img class="hero-image" alt="Kapitelbild" src="../assets/images/logoBrand.png" />
+
+        <button class="back-btn" @click="goBackToChapters">
+          ← Zur Kapitelübersicht
+        </button>
+      </div>
     </header>
 
     <Swiper class="slides-swiper" :space-between="24" :slides-per-view="1" :centered-slides="true" grab-cursor
@@ -132,7 +139,7 @@
 
 <script setup>
 import api from "../api";
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, ref, computed, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
@@ -152,6 +159,7 @@ const activeIndex = ref(0);
 const isPlaying = ref({});          // Play/Pause Status pro Video
 const isMuted = ref({});            // Mute Status pro Video
 const currentTime = ref({});        // Aktuelle Zeit pro Video
+const progressRecord = ref(null);
 let swiperInstance = null;
 
 // Kapitel laden
@@ -165,10 +173,14 @@ const onSwiperInit = (swiper) => {
   updateSwiperNavigation();
 };
 
+const goBackToChapters = () => {
+  router.push('/chapters');
+};
 // Wenn Kapitel/Slides geladen sind, Progress zurücksetzen
 watch(
   () => chapterStore.currentChapter,
-  (chapter) => {
+  async (chapter) => {
+    // State resetten
     visitedSlides.value = {};
     videoCompleted.value = {};
     watchedDurations.value = {};
@@ -177,22 +189,21 @@ watch(
     isMuted.value = {};
     currentTime.value = {};
     activeIndex.value = 0;
+    progressRecord.value = null;
 
     if (chapter && chapter.slides && chapter.slides.length > 0) {
-      const firstSlide = chapter.slides[0];
-      // erste Slide direkt als "gesehen" markieren, wenn kein Video
-      if (firstSlide.type !== 'video') {
-        visitedSlides.value[firstSlide.id] = true;
-      }
+      // erst Progress aus DB holen und Swiper positionieren
+      await loadProgressForChapter(chapter);
     }
 
-    // Swiper Navigation nach Laden aktualisieren
+    // Navigation aktualisieren
     setTimeout(() => {
       updateSwiperNavigation();
     }, 100);
   },
   { immediate: true }
 );
+
 
 const splitLines = (text) => (text ? text.split('\n') : []);
 
@@ -224,9 +235,7 @@ const onSlideChange = (swiper) => {
   const prevIndex = activeIndex.value;
   const prevSlide = chapter.slides[prevIndex];
 
-  // Prüfen ob vorherige Slide ein unvollständiges Video war
   if (prevSlide && prevSlide.type === 'video' && !videoCompleted.value[prevSlide.id]) {
-    // Zurück zur vorherigen Slide springen
     swiper.slideTo(prevIndex, 0);
     return;
   }
@@ -241,9 +250,12 @@ const onSlideChange = (swiper) => {
     visitedSlides.value[currentSlide.id] = true;
   }
 
-  // Swiper-Zustand aktualisieren
   updateSwiperNavigation();
+
+  // neu: Fortschritt speichern (nur wenn wir vorwärts gehen könnte man optional prüfen)
+  saveProgress();
 };
+
 
 // Navigation-Status aktualisieren
 const updateSwiperNavigation = () => {
@@ -308,9 +320,10 @@ const onVideoSeeking = (event, slideId) => {
 const onVideoEnded = (slideId) => {
   videoCompleted.value[slideId] = true;
   isPlaying.value[slideId] = false;
-  // Navigation wieder freigeben
   updateSwiperNavigation();
+  saveProgress();
 };
+
 
 // Custom Video Controls
 const togglePlay = (slideId) => {
@@ -438,6 +451,48 @@ const finishChapter = async () => {
     alert("Es gab einen Fehler beim Abschließen des Kapitels. Bitte versuche es erneut.");
   }
 };
+const loadProgressForChapter = async (chapter) => {
+  try {
+    const { data } = await api.get(`/progress/${chapter.id}`);
+    progressRecord.value = data;
+
+    let startIndex = 0;
+    if (data && typeof data.lastSlideIndex === 'number') {
+      startIndex = data.lastSlideIndex;
+    }
+
+    activeIndex.value = startIndex;
+
+    // Alle Slides bis dahin als "gesehen" markieren (außer Videos, da regelst du eh per completed/videoCompleted)
+    chapter.slides.forEach((slide, idx) => {
+      if (idx <= startIndex && slide.type !== 'video') {
+        visitedSlides.value[slide.id] = true;
+      }
+    });
+
+    // Swiper nach initialem Render auf die gespeicherte Slide springen
+    await nextTick();
+    if (swiperInstance) {
+      swiperInstance.slideTo(startIndex, 0);
+      updateSwiperNavigation();
+    }
+  } catch (err) {
+    console.error('Error loading chapter progress:', err);
+  }
+};
+const saveProgress = async () => {
+  const chapter = chapterStore.currentChapter;
+  if (!chapter) return;
+
+  try {
+    await api.post(`/progress/update/${chapter.id}`, {
+      lastSlideIndex: activeIndex.value,
+    });
+  } catch (err) {
+    console.error('Error saving progress:', err);
+  }
+};
+
 </script>
 
 <style scoped>
@@ -453,6 +508,37 @@ const finishChapter = async () => {
 
 .page-center {
   justify-content: center;
+}
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.back-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #374151;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s;
+}
+
+.back-btn:hover {
+  background: #111827;
+  border-color: #4b5563;
+  transform: translateY(-1px);
+}
+
+.back-btn.secondary {
+  margin-top: 12px;
+  align-self: center;
 }
 
 .chapter-header {

@@ -48,5 +48,23 @@ router.get('/:slug', async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch chapter.' });
   }
 });
+router.get('/:id/summary', async (req, res) => {
+  try {
+    const chapter = await Chapter.findOne({
+      where: { id: req.params.id },
+      include: [{ model: ChapterSlide }],
+    });
+
+    if (!chapter) return res.status(404).json({ message: 'Not found' });
+
+    const summary = chapter.ChapterSlides.find((s) => s.type === 'summary');
+
+    res.json(summary || null);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error loading summary' });
+  }
+});
+
 
 export default router;

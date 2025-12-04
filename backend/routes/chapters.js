@@ -1,6 +1,7 @@
 import express from 'express';
 import Chapter from '../models/chapters.js';
 import ChapterSlide from '../models/ChapterSlide.js';
+import authMiddleware from '../middleware/auth.js';
 
 const router = express.Router();
 

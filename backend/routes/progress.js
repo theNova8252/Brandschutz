@@ -1,16 +1,18 @@
 import express from 'express';
 import UserProgress from '../models/UserProgress.js';
 import Chapter from '../models/chapters.js';
+import authMiddleware from '../middleware/auth.js';
 
 const router = express.Router();
+
+// ALLE Progress-Routen nur für eingeloggte User
+router.use(authMiddleware);
 
 // Liste aller Fortschritte des Users
 router.get('/', async (req, res) => {
   try {
-    if (!req.session.userId) return res.status(401).json({ message: 'Not logged in' });
-
     const progress = await UserProgress.findAll({
-      where: { userId: req.session.userId },
+      where: { userId: req.user.id },
       include: [{ model: Chapter }],
     });
 
@@ -21,15 +23,13 @@ router.get('/', async (req, res) => {
   }
 });
 
-// NEU: Fortschritt für EIN Kapitel holen
+// Fortschritt für EIN Kapitel holen
 router.get('/:chapterId', async (req, res) => {
   try {
-    if (!req.session.userId) return res.status(401).json({ message: 'Not logged in' });
-
     const { chapterId } = req.params;
 
     const record = await UserProgress.findOne({
-      where: { userId: req.session.userId, chapterId },
+      where: { userId: req.user.id, chapterId },
     });
 
     res.json(record || null);
@@ -39,21 +39,47 @@ router.get('/:chapterId', async (req, res) => {
   }
 });
 
-// NEU: Fortschritt (started + lastSlideIndex) speichern/aktualisieren
+// Start eines Kapitels registrieren
+router.post('/start/:chapterId', async (req, res) => {
+  try {
+    const { chapterId } = req.params;
+
+    const [progress, created] = await UserProgress.findOrCreate({
+      where: { userId: req.user.id, chapterId },
+      defaults: {
+        started: true,
+        completed: false,
+        completedAt: null,
+        lastSlideIndex: 0,
+      },
+    });
+
+    // falls es schon existiert, started auf true setzen
+    if (!created && !progress.started) {
+      progress.started = true;
+      await progress.save();
+    }
+
+    res.json(progress);
+  } catch (err) {
+    console.error('Error creating/reading UserProgress:', err);
+    res.status(500).json({ message: 'Konnte Fortschritt nicht speichern.' });
+  }
+});
+
+// Fortschritt (Slide-Index) aktualisieren
 router.post('/update/:chapterId', async (req, res) => {
   try {
-    if (!req.session.userId) return res.status(401).json({ message: 'Not logged in' });
-
     const { chapterId } = req.params;
     const { lastSlideIndex } = req.body;
 
     let record = await UserProgress.findOne({
-      where: { userId: req.session.userId, chapterId },
+      where: { userId: req.user.id, chapterId },
     });
 
     if (!record) {
       record = await UserProgress.create({
-        userId: req.session.userId,
+        userId: req.user.id,
         chapterId,
         started: true,
         completed: false,
@@ -74,25 +100,23 @@ router.post('/update/:chapterId', async (req, res) => {
   }
 });
 
-// Kapitel als abgeschlossen markieren (deins leicht erweitert)
+// Kapitel abschließen
 router.post('/complete/:chapterId', async (req, res) => {
   try {
-    if (!req.session.userId) return res.status(401).json({ message: 'Not logged in' });
-
     const { chapterId } = req.params;
 
     let record = await UserProgress.findOne({
-      where: { userId: req.session.userId, chapterId },
+      where: { userId: req.user.id, chapterId },
     });
 
     if (!record) {
       record = await UserProgress.create({
-        userId: req.session.userId,
+        userId: req.user.id,
         chapterId,
         started: true,
         completed: true,
         completedAt: new Date(),
-        lastSlideIndex: 9999, // "alles durch" – oder chapter.slides.length - 1, wenn du willst
+        lastSlideIndex: 9999,
       });
     } else {
       record.started = true;

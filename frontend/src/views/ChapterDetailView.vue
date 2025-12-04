@@ -163,9 +163,19 @@ const progressRecord = ref(null);
 let swiperInstance = null;
 
 // Kapitel laden
-onMounted(() => {
-  chapterStore.fetchChapter(route.params.slug);
+onMounted(async () => {
+  await chapterStore.fetchChapter(route.params.slug);
+
+  const chapter = chapterStore.currentChapter;
+  if (chapter) {
+    try {
+      await api.post(`/progress/start/${chapter.id}`, {}, { withCredentials: true });
+    } catch (e) {
+      console.warn('Konnte Start-Fortschritt nicht speichern:', e);
+    }
+  }
 });
+
 
 // Swiper-Instanz speichern
 const onSwiperInit = (swiper) => {
@@ -175,6 +185,35 @@ const onSwiperInit = (swiper) => {
 
 const goBackToChapters = () => {
   router.push('/chapters');
+};
+const loadProgressForChapter = async (chapter) => {
+  try {
+    const { data } = await api.get(`/progress/${chapter.id}`);
+    progressRecord.value = data;
+
+    let startIndex = 0;
+    if (data && typeof data.lastSlideIndex === 'number') {
+      startIndex = data.lastSlideIndex;
+    }
+
+    activeIndex.value = startIndex;
+
+    // Alle Slides bis dahin als "gesehen" markieren (außer Videos, da regelst du eh per completed/videoCompleted)
+    chapter.slides.forEach((slide, idx) => {
+      if (idx <= startIndex && slide.type !== 'video') {
+        visitedSlides.value[slide.id] = true;
+      }
+    });
+
+    // Swiper nach initialem Render auf die gespeicherte Slide springen
+    await nextTick();
+    if (swiperInstance) {
+      swiperInstance.slideTo(startIndex, 0);
+      updateSwiperNavigation();
+    }
+  } catch (err) {
+    console.error('Error loading chapter progress:', err);
+  }
 };
 // Wenn Kapitel/Slides geladen sind, Progress zurücksetzen
 watch(
@@ -451,35 +490,7 @@ const finishChapter = async () => {
     alert("Es gab einen Fehler beim Abschließen des Kapitels. Bitte versuche es erneut.");
   }
 };
-const loadProgressForChapter = async (chapter) => {
-  try {
-    const { data } = await api.get(`/progress/${chapter.id}`);
-    progressRecord.value = data;
 
-    let startIndex = 0;
-    if (data && typeof data.lastSlideIndex === 'number') {
-      startIndex = data.lastSlideIndex;
-    }
-
-    activeIndex.value = startIndex;
-
-    // Alle Slides bis dahin als "gesehen" markieren (außer Videos, da regelst du eh per completed/videoCompleted)
-    chapter.slides.forEach((slide, idx) => {
-      if (idx <= startIndex && slide.type !== 'video') {
-        visitedSlides.value[slide.id] = true;
-      }
-    });
-
-    // Swiper nach initialem Render auf die gespeicherte Slide springen
-    await nextTick();
-    if (swiperInstance) {
-      swiperInstance.slideTo(startIndex, 0);
-      updateSwiperNavigation();
-    }
-  } catch (err) {
-    console.error('Error loading chapter progress:', err);
-  }
-};
 const saveProgress = async () => {
   const chapter = chapterStore.currentChapter;
   if (!chapter) return;

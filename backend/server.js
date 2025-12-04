@@ -10,6 +10,7 @@ import './models/UserProgress.js';
 import { seedChapters } from './seed/seedChapters.js';
 import chaptersRoutes from './routes/chapters.js';
 import progressRoutes from './routes/progress.js';
+import authMiddleware from './middleware/auth.js';
 
 
 dotenv.config();

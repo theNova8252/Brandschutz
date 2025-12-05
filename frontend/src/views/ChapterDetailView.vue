@@ -77,7 +77,7 @@
                   fill="currentColor" />
                 <path d="M8 4.5v4l3 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
               </svg>
-              ⚠️ Du musst das Video bis zum Ende ansehen, bevor du weiterkommst
+              Du musst das Video bis zum Ende ansehen, bevor du weiterkommst!
             </div>
             <div v-else class="progress-hint completed">
               <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">

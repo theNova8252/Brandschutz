@@ -1,4 +1,3 @@
-// backend/models/ChapterSlide.js
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
 import Chapter from './chapters.js';

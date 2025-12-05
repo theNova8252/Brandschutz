@@ -5,7 +5,6 @@ import authMiddleware from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/chapters  -> Liste für Übersicht
 router.get('/', async (req, res) => {
   try {
     const chapters = await Chapter.findAll({
@@ -20,7 +19,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/chapters/:slug  -> einzelnes Kapitel mit Slides
 router.get('/:slug', async (req, res) => {
   try {
     const { slug } = req.params;

@@ -1,4 +1,3 @@
-// controllers/authController.js
 import axios from 'axios';
 import dotenv from 'dotenv';
 import User from '../models/User.js';
@@ -74,7 +73,6 @@ export const googleCallback = async (req, res) => {
   }
 };
 
-// ===== NEU: /auth/me =====
 export const me = async (req, res) => {
   try {
     if (!req.session.userId) {
@@ -96,9 +94,7 @@ export const me = async (req, res) => {
   }
 };
 
-// ===== NEU: /auth/logout =====
 export const logout = (req, res) => {
-  // Session zerstören
   req.session.destroy((err) => {
     if (err) {
       console.error('Logout session destroy error:', err);
@@ -106,7 +102,7 @@ export const logout = (req, res) => {
     }
 
     // Session-Cookie löschen (Name muss zu deinem session-cookie passen)
-    res.clearCookie('connect.sid'); // oder der Name den du in express-session gesetzt hast
+    res.clearCookie('connect.sid'); 
 
     return res.json({ message: 'Logged out' });
   });

@@ -6,16 +6,30 @@
     <div class="card">
       <div class="card-glow"></div>
 
-      <img src="../assets/images/logoBrand.png" alt="HTL FireCourse Logo" class="logo" />
+      <img
+        src="../assets/images/logoBrand.png"
+        alt="HTL FireCourse Logo"
+        class="logo"
+      />
 
       <h2 class="title">Brandschutz Lernplattform</h2>
 
       <p class="subtitle">Melde dich mit deinem Schul-Google-Konto an.</p>
 
       <button @click="googleLogin" class="google-btn">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo" />
+        <img
+          src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+          alt="Google Logo"
+        />
         <span>Mit Google anmelden</span>
       </button>
+      <!--Fehlermeldung falls nicht htlwienwest schüler-->
+      <p v-if="error === 'domain'" class="error-msg">
+        Nur HTL Wien West Accounts erlaubt.
+      </p>
+      <p v-else-if="error" class="error-msg">
+        Anmeldung fehlgeschlagen. Bitte erneut versuchen.
+      </p>
 
       <div class="footer-text">
         HTL Wien West • Sicher lernen, Wissen schützen
@@ -25,8 +39,13 @@
 </template>
 
 <script setup>
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+const error = route.query.error;
+
 const googleLogin = () => {
-  window.location.href = 'http://localhost:5000/api/auth/google';
+  window.location.href = "http://localhost:5000/api/auth/google";
 };
 </script>
 
@@ -48,25 +67,28 @@ const googleLogin = () => {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle at 30% 50%,
-      rgba(239, 68, 68, 0.15) 0%,
-      rgba(249, 115, 22, 0.1) 25%,
-      transparent 50%);
+  background: radial-gradient(
+    circle at 30% 50%,
+    rgba(239, 68, 68, 0.15) 0%,
+    rgba(249, 115, 22, 0.1) 25%,
+    transparent 50%
+  );
   animation: gradientShift 15s ease infinite;
 }
 
 .background-pattern {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px
+    ),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
   opacity: 0.3;
 }
 
 @keyframes gradientShift {
-
   0%,
   100% {
     transform: translate(0, 0) rotate(0deg);
@@ -78,14 +100,16 @@ const googleLogin = () => {
 }
 
 .card {
-  background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(17, 24, 39, 0.95) 0%,
+    rgba(31, 41, 55, 0.9) 100%
+  );
   backdrop-filter: blur(20px);
   padding: 56px 48px;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    0 25px 50px rgba(0, 0, 0, 0.5),
-    0 0 100px rgba(239, 68, 68, 0.1);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 100px rgba(239, 68, 68, 0.1);
   color: #e5e7eb;
   max-width: 480px;
   width: 100%;
@@ -110,7 +134,11 @@ const googleLogin = () => {
 .card-glow {
   position: absolute;
   inset: -2px;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(249, 115, 22, 0.3));
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.3),
+    rgba(249, 115, 22, 0.3)
+  );
   border-radius: 24px;
   opacity: 0;
   filter: blur(20px);
@@ -133,7 +161,6 @@ const googleLogin = () => {
 }
 
 @keyframes logoFloat {
-
   0%,
   100% {
     transform: translateY(0);
@@ -197,7 +224,7 @@ const googleLogin = () => {
 }
 
 .google-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
@@ -257,5 +284,12 @@ const googleLogin = () => {
   .title {
     font-size: 1.3rem;
   }
+}
+
+.error-msg {
+  margin-top: 16px;
+  color: #f87171;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 </style>

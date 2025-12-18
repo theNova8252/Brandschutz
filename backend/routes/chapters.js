@@ -2,22 +2,43 @@ import express from 'express';
 import Chapter from '../models/chapters.js';
 import ChapterSlide from '../models/ChapterSlide.js';
 import authMiddleware from '../middleware/auth.js';
+import UserProgress from '../models/userProgress.js';
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const chapters = await Chapter.findAll({
       order: [['order', 'ASC']],
       attributes: ['id', 'slug', 'title', 'order', 'heroImage', 'introVideo'],
     });
 
-    res.json(chapters);
+    // Fortschritt vom User holen
+    const progress = await UserProgress.findAll({
+      where: { userId: req.user.id },
+      attributes: ['chapterId', 'completed'],
+    });
+
+    const completedMap = new Map(progress.map(p => [p.chapterId, !!p.completed]));
+    // - erstes Kapitel immer unlocked
+    // - jedes weitere: unlocked nur wenn vorheriges completed ist
+    const result = chapters.map((chap, idx) => {
+      const prevChapter = idx > 0 ? chapters[idx - 1] : null;
+      const unlocked = !prevChapter || completedMap.get(prevChapter.id) === true;
+
+      return {
+        ...chap.toJSON(),
+        locked: !unlocked,
+      };
+    });
+
+    res.json(result);
   } catch (err) {
     console.error('Error fetching chapters:', err);
     res.status(500).json({ message: 'Failed to fetch chapters.' });
   }
 });
+
 
 router.get('/:slug', async (req, res) => {
   try {

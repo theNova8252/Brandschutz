@@ -12,6 +12,22 @@ const progress = ref([]);
 const loadingProgress = ref(false);
 const progressError = ref(null);
 
+
+// all chapters completed
+const allCompleted = computed(() => {
+  if (!chapterStore.list.length) return false;
+
+  const completedIds = progress.value
+    .filter(p => p.completed)
+    .map(p => p.chapterId);
+
+  return chapterStore.list.every(chap =>
+    completedIds.includes(chap.id)
+  );
+});
+
+
+
 // --- User / Sign-out ---
 const userName = ref('');
 const userMenuOpen = ref(false);
@@ -75,6 +91,11 @@ const fetchProgress = async () => {
   }
 };
 
+const downloadCertificate = () => {
+  window.open('http://localhost:5000/api/progress/certificate', '_blank');
+};
+
+
 onMounted(async () => {
   window.addEventListener('click', handleClickOutside);
 
@@ -87,8 +108,9 @@ onBeforeUnmount(() => {
   window.removeEventListener('click', handleClickOutside);
 });
 
-const openChapter = (slug) => {
-  router.push({ name: 'chapter-detail', params: { slug } });
+const openChapter = (chap) => {
+  if(chap.locked) return;
+  router.push({ name: 'chapter-detail', params: { slug: chap.slug } });
 };
 
 const chaptersWithProgress = computed(() => {
@@ -98,28 +120,34 @@ const chaptersWithProgress = computed(() => {
     .slice()
     .sort((a, b) => (a.order || 0) - (b.order || 0))
     .map((chap) => {
-      const p = progress.value.find((pr) => pr.chapterId === chap.id);
+     const p = progress.value.find((pr) => pr.chapterId === chap.id);
 
-      const isCompleted = !!p?.completed;
-      const hasProgress = !!p;
+const isCompleted = p?.completed === true;
+const isInProgress =
+  p &&
+  (p.started === true || (p.lastSlideIndex ?? 0) > 0);
 
-      let status = 'Nicht begonnen';
-      let statusClass = 'status-not-started';
+let status = 'Nicht begonnen';
+let statusClass = 'status-not-started';
 
-      if (isCompleted) {
-        status = 'Abgeschlossen';
-        statusClass = 'status-done';
-      } else if (hasProgress) {
-        status = 'In Bearbeitung';
-        statusClass = 'status-in-progress';
-      }
+if (isCompleted) {
+  status = 'Abgeschlossen';
+  statusClass = 'status-done';
+} else if (isInProgress) {
+  status = 'In Bearbeitung';
+  statusClass = 'status-in-progress';
+}
+
 
       return {
         ...chap,
         status,
         statusClass,
+        locked: chap.locked === true,
       };
     });
+
+    
 });
 </script>
 
@@ -138,12 +166,13 @@ const chaptersWithProgress = computed(() => {
     </p>
 
     <div v-else class="chapters-grid">
-      <div v-for="chap in chaptersWithProgress" :key="chap.id" class="chapter-card" @click="openChapter(chap.slug)">
+      <div v-for="chap in chaptersWithProgress" :key="chap.id" class="chapter-card" :class="{ locked: chap.locked }" @click="openChapter(chap)">
         <div class="chapter-number">{{ chap.order }}</div>
 
         <div class="chapter-content">
           <div class="chapter-header">
             <h2 class="chapter-title">{{ chap.title }}</h2>
+            <span v-if="chap.locked" class="lock-icon">🔒</span>
             <span class="chapter-status" :class="chap.statusClass">
               <span class="status-dot"></span>
               {{ chap.status }}
@@ -166,6 +195,13 @@ const chaptersWithProgress = computed(() => {
         </div>
       </div>
     </div>
+
+<div v-if="allCompleted" class="certificate-box">
+  <button @click="downloadCertificate">
+    📄 Zertifikat herunterladen
+  </button>
+</div>
+
 
     <!-- USER MENU unten rechts -->
     <div class="user-menu" @click.stop="toggleUserMenu">
@@ -446,4 +482,34 @@ const chaptersWithProgress = computed(() => {
   background: #b91c1c;
   transform: translateY(-1px);
 }
+
+
+.locked {
+  opacity: 0.45;
+  pointer-events: none;
+  filter: grayscale(1);
+}
+
+.lock-icon {
+  font-size: 1.1rem;
+  margin-left: 6px;
+}
+
+
+.certificate-box {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.certificate-box button {
+  padding: 14px 24px;
+  font-size: 1.1rem;
+  background: #22c55e;
+  color: white;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+
 </style>

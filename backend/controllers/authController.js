@@ -48,6 +48,16 @@ export const googleCallback = async (req, res) => {
 
     const userData = userResponse.data;
 
+    // login nur mit @htlwienwest.at erlaubn
+    const allowedDomain = (process.env.ALLOWED_EMAIL_DOMAIN || '').toLowerCase();
+const emailDomain = (userData.email.split('@')[1] || '').toLowerCase();
+
+if (allowedDomain && emailDomain !== allowedDomain) {
+  const frontendBase = process.env.FRONTEND_URL || 'http://localhost:5173';
+  return res.redirect(`${frontendBase}/login?error=domain`);
+}
+
+
     let user = await User.findOne({ where: { email: userData.email } });
 
     if (!user) {

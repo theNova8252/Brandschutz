@@ -132,8 +132,9 @@
 
   <div v-else class="page page-center">
     <p v-if="chapterStore.chapterLoading">Kapitel wird geladen …</p>
-    <p v-else-if="chapterStore.chapterError">{{ chapterStore.chapterError }}</p>
-    <p v-else>Kein Kapitel gefunden.</p>
+    <p v-else-if="chapterStore.chapterError" class="error-box">{{ chapterStore.chapterError }}
+    <br />
+    <button class="back-btn secondary" @click="goBackToChapters">Zur Kapitelübersicht</button></p>
   </div>
 </template>
 
@@ -483,6 +484,9 @@ const finishChapter = async () => {
 
   try {
     await api.post(`/progress/complete/${chapterId}`);
+
+    await chapterStore.fetchChapters();
+
     alert("Kapitel erfolgreich abgeschlossen!");
     router.push("/chapters");
   } catch (error) {
@@ -490,6 +494,7 @@ const finishChapter = async () => {
     alert("Es gab einen Fehler beim Abschließen des Kapitels. Bitte versuche es erneut.");
   }
 };
+
 
 const saveProgress = async () => {
   const chapter = chapterStore.currentChapter;
@@ -797,4 +802,17 @@ const saveProgress = async () => {
   width: 100%;
   max-width: 350px;
 }
+
+.error-box {
+  padding: 20px 24px;
+  border-radius: 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  font-size: 1rem;
+  text-align: center;
+  max-width: 420px;
+}
+
+
 </style>

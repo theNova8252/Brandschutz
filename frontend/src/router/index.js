@@ -24,6 +24,12 @@ const routes = [
     name: 'users',
     component: UsersView,
   },
+
+  {
+  path: '/verify/:id',
+  component: () => import('../views/VerifyView.vue'),
+},
+
 ];
 
 const router = createRouter({

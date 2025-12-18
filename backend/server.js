@@ -7,7 +7,7 @@ import sequelize from './config/db.js';
 import './models/User.js';
 import './models/chapters.js';
 import './models/ChapterSlide.js';
-import './models/UserProgress.js';
+import './models/userProgress.js';
 
 import { seedChapters } from './seed/seedChapters.js';
 
@@ -15,6 +15,10 @@ import chaptersRoutes from './routes/chapters.js';
 import progressRoutes from './routes/progress.js';
 import usersRoutes from './routes/users.js';
 import authRoutes from './routes/auth.js';
+import './models/certificate.js';
+import certificateRoutes from './routes/certificate.js';
+
+
 
 dotenv.config();
 
@@ -42,6 +46,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/chapters', chaptersRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/certificate', certificateRoutes);
+
 
 app.get('/', (req, res) => res.send('Brandschutz API läuft'));
 

@@ -1,16 +1,15 @@
+// backend/controllers/authController.js
 import axios from 'axios';
 import dotenv from 'dotenv';
 import User from '../models/User.js';
+import Role from '../models/Role.js';
 
 dotenv.config();
 
-const specialEmails = (process.env.SPECIAL_EMAILS || '')
-  .split(',')
-  .map(e => e.trim().toLowerCase())
-  .filter(Boolean);
-
-const getRoleForEmail = (email) =>
-  specialEmails.includes(email.toLowerCase()) ? 'SPECIAL' : 'USER';
+async function ensureRole(name) {
+  const [role] = await Role.findOrCreate({ where: { name } });
+  return role;
+}
 
 export const googleLogin = (req, res) => {
   const googleAuthUrl =
@@ -18,7 +17,8 @@ export const googleLogin = (req, res) => {
     `?client_id=${process.env.GOOGLE_CLIENT_ID}` +
     `&response_type=code` +
     `&redirect_uri=${encodeURIComponent(process.env.GOOGLE_REDIRECT_URI)}` +
-    `&scope=${encodeURIComponent('profile email')}`;
+    `&scope=${encodeURIComponent('profile email')}` +
+    `&hd=htlwienwest.at`; // UX-Hinweis an Google
 
   res.redirect(googleAuthUrl);
 };
@@ -37,42 +37,41 @@ export const googleCallback = async (req, res) => {
         redirect_uri: process.env.GOOGLE_REDIRECT_URI,
         grant_type: 'authorization_code',
       }).toString(),
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
 
     const accessToken = tokenResponse.data.access_token;
 
-    const userResponse = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    const userResponse = await axios.get(
+      'https://www.googleapis.com/oauth2/v2/userinfo',
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
 
     const userData = userResponse.data;
+    const email = userData.email.toLowerCase().trim();
 
-    // login nur mit @htlwienwest.at erlaubn
-    const allowedDomain = (process.env.ALLOWED_EMAIL_DOMAIN || '').toLowerCase();
-const emailDomain = (userData.email.split('@')[1] || '').toLowerCase();
+    // 🔒 HARTE REGEL: nur HTL Wien West
+    if (!email.endsWith('@htlwienwest.at')) {
+      const frontendBase = process.env.FRONTEND_URL || 'http://localhost:5173';
+      return res.redirect(`${frontendBase}/login?error=domain`);
+    }
 
-if (allowedDomain && emailDomain !== allowedDomain) {
-  const frontendBase = process.env.FRONTEND_URL || 'http://localhost:5173';
-  return res.redirect(`${frontendBase}/login?error=domain`);
-}
-
-
-    let user = await User.findOne({ where: { email: userData.email } });
+    let user = await User.findOne({ where: { email } });
 
     if (!user) {
       user = await User.create({
         name: userData.name,
-        email: userData.email,
+        email,
         googleId: userData.id,
         googleToken: accessToken,
         profileImage: userData.picture,
         isNewUser: true,
-        role: getRoleForEmail(userData.email),
       });
+
+      const userRole = await ensureRole('USER');
+      await user.addRole(userRole);
     } else {
       user.googleToken = accessToken;
-      user.role = getRoleForEmail(userData.email);
       if (!user.profileImage && userData.picture) {
         user.profileImage = userData.picture;
       }
@@ -85,7 +84,7 @@ if (allowedDomain && emailDomain !== allowedDomain) {
     res.redirect(`${frontendBase}/chapters`);
   } catch (err) {
     console.error('Google Callback Error:', err);
-    res.status(500).send('Failed to authenticate with Google.');
+    res.status(500).send('Authentication failed');
   }
 };
 
@@ -95,10 +94,24 @@ export const me = async (req, res) => {
   }
 
   const user = await User.findByPk(req.session.userId, {
-    attributes: ['id', 'name', 'email', 'profileImage', 'role'],
+    attributes: ['id', 'name', 'email', 'profileImage'],
+    include: [
+      {
+        model: Role,
+        as: 'roles',
+        attributes: ['name'],
+        through: { attributes: [] },
+      },
+    ],
   });
 
-  res.json(user);
+  res.json({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    profileImage: user.profileImage,
+    roles: user.roles.map(r => r.name),
+  });
 };
 
 export const logout = (req, res) => {

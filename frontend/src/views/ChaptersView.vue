@@ -3,15 +3,16 @@ import api from '../api';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 
 import { useChapterStore } from '../stores/chapterStore';
+import { useUserStore } from '../stores/userStore';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const chapterStore = useChapterStore();
+const userStore = useUserStore();
 
 const progress = ref([]);
 const loadingProgress = ref(false);
 const progressError = ref(null);
-
 
 // all chapters completed
 const allCompleted = computed(() => {
@@ -25,8 +26,6 @@ const allCompleted = computed(() => {
     completedIds.includes(chap.id)
   );
 });
-
-
 
 // --- User / Sign-out ---
 const userName = ref('');
@@ -56,7 +55,8 @@ const handleClickOutside = (e) => {
 
 const signOut = async () => {
   try {
-    await api.post('/auth/logout', {}, { withCredentials: true });
+    // ✅ wichtiger Fix: über Pinia Store ausloggen (setzt user = null)
+    await userStore.logout();
   } catch (e) {
     console.error('Logout error:', e);
   } finally {
@@ -64,11 +64,22 @@ const signOut = async () => {
   }
 };
 
-// User-Daten laden (falls du einen /auth/me o.ä. hast)
+// User-Daten laden
 const fetchMe = async () => {
   try {
+    // Erst versuchen: Store (falls App.vue schon fetchMe macht)
+    if (userStore.user) {
+      userName.value =
+        userStore.user?.name ||
+        userStore.user?.username ||
+        userStore.user?.email ||
+        'User';
+      return;
+    }
+
+    // Fallback: Backend fragen (ändert Design nicht)
     const { data } = await api.get('/auth/me', { withCredentials: true });
-    userName.value = data?.name || data?.username || 'User';
+    userName.value = data?.name || data?.username || data?.email || 'User';
   } catch (e) {
     console.warn('Konnte Userdaten nicht laden:', e);
   }
@@ -95,7 +106,6 @@ const downloadCertificate = () => {
   window.open('http://localhost:5000/api/progress/certificate', '_blank');
 };
 
-
 onMounted(async () => {
   window.addEventListener('click', handleClickOutside);
 
@@ -120,24 +130,23 @@ const chaptersWithProgress = computed(() => {
     .slice()
     .sort((a, b) => (a.order || 0) - (b.order || 0))
     .map((chap) => {
-     const p = progress.value.find((pr) => pr.chapterId === chap.id);
+      const p = progress.value.find((pr) => pr.chapterId === chap.id);
 
-const isCompleted = p?.completed === true;
-const isInProgress =
-  p &&
-  (p.started === true || (p.lastSlideIndex ?? 0) > 0);
+      const isCompleted = p?.completed === true;
+      const isInProgress =
+        p &&
+        (p.started === true || (p.lastSlideIndex ?? 0) > 0);
 
-let status = 'Nicht begonnen';
-let statusClass = 'status-not-started';
+      let status = 'Nicht begonnen';
+      let statusClass = 'status-not-started';
 
-if (isCompleted) {
-  status = 'Abgeschlossen';
-  statusClass = 'status-done';
-} else if (isInProgress) {
-  status = 'In Bearbeitung';
-  statusClass = 'status-in-progress';
-}
-
+      if (isCompleted) {
+        status = 'Abgeschlossen';
+        statusClass = 'status-done';
+      } else if (isInProgress) {
+        status = 'In Bearbeitung';
+        statusClass = 'status-in-progress';
+      }
 
       return {
         ...chap,
@@ -146,8 +155,6 @@ if (isCompleted) {
         locked: chap.locked === true,
       };
     });
-
-    
 });
 </script>
 
@@ -201,7 +208,6 @@ if (isCompleted) {
     📄 Zertifikat herunterladen
   </button>
 </div>
-
 
     <!-- USER MENU unten rechts -->
     <div class="user-menu" @click.stop="toggleUserMenu">
@@ -483,7 +489,6 @@ if (isCompleted) {
   transform: translateY(-1px);
 }
 
-
 .locked {
   opacity: 0.45;
   pointer-events: none;
@@ -494,7 +499,6 @@ if (isCompleted) {
   font-size: 1.1rem;
   margin-left: 6px;
 }
-
 
 .certificate-box {
   margin-top: 40px;
@@ -510,6 +514,4 @@ if (isCompleted) {
   border: none;
   cursor: pointer;
 }
-
-
 </style>

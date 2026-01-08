@@ -23,6 +23,7 @@
         />
         <span>Mit Google anmelden</span>
       </button>
+
       <!--Fehlermeldung falls nicht htlwienwest schüler-->
       <p v-if="error === 'domain'" class="error-msg">
         Nur HTL Wien West Accounts erlaubt.
@@ -45,7 +46,9 @@ const route = useRoute();
 const error = route.query.error;
 
 const googleLogin = () => {
-  window.location.href = "http://localhost:5000/api/auth/google";
+  // ✅ Hosted Domain Hint: versucht Google-Login auf diese Domain zu beschränken
+  // (Design bleibt gleich; nur Redirect-URL wird ergänzt)
+  window.location.href = "/api/auth/google?hd=htlwienwest.at";
 };
 </script>
 

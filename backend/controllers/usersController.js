@@ -1,41 +1,100 @@
+// backend/controllers/usersController.js
 import User from '../models/User.js';
+import Role from '../models/Role.js';
 import UserProgress from '../models/userProgress.js';
+import Chapter from '../models/chapters.js';
 
-function calcStatus(progress) {
-  if (!progress || progress.length === 0) return 'nicht begonnen';
-
-  if (progress.some(p => p.completed)) return 'abgeschlossen';
-
-  if (progress.some(p => p.started || (p.lastSlideIndex ?? 0) > 0)) return 'begonnen';
-
-  return 'nicht begonnen';
+async function ensureRole(name) {
+  const [role] = await Role.findOrCreate({ where: { name } });
+  return role;
 }
 
-export async function getUsersOverview(req, res) {
+// ==============================
+// GET /api/users  (ADMIN)
+// ==============================
+export const listUsers = async (req, res) => {
   try {
+    const totalChapters = await Chapter.count();
+
     const users = await User.findAll({
-      attributes: ['id', 'name', 'email', 'role'],
+      attributes: ['id', 'name', 'email', 'createdAt'],
       include: [
         {
+          model: Role,
+          as: 'roles',
+          attributes: ['name'],
+          through: { attributes: [] },
+        },
+        {
           model: UserProgress,
-          attributes: ['started', 'lastSlideIndex', 'completed'],
-          required: false,
+          attributes: ['started', 'completed'],
         },
       ],
-      order: [['id', 'ASC']],
+      order: [['createdAt', 'DESC']],
     });
 
-    const result = users.map(user => ({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      status: calcStatus(user.UserProgresses),
-    }));
+    const result = users.map((u) => {
+      const progresses = u.UserProgresses || [];
+      const completedCount = progresses.filter(p => p.completed).length;
+      const startedCount = progresses.filter(p => p.started).length;
+
+      let status = 'Nicht begonnen';
+      if (completedCount === totalChapters && totalChapters > 0) {
+        status = 'Abgeschlossen';
+      } else if (startedCount > 0) {
+        status = 'In Bearbeitung';
+      }
+
+      return {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        createdAt: u.createdAt,
+        roles: (u.roles || []).map(r => r.name),
+        status,
+      };
+    });
 
     res.json(result);
   } catch (err) {
-    console.error('Users overview error:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+    res.status(500).json({ message: 'Fehler beim Laden der Benutzer' });
   }
-}
+};
+
+// ==============================
+// POST /api/users/roles (ADMIN)
+// ==============================
+export const updateRoleByEmails = async (req, res) => {
+  try {
+    const { emails, role, action } = req.body;
+
+    if (!Array.isArray(emails) || emails.length === 0) {
+      return res.status(400).json({ message: 'emails[] required' });
+    }
+    if (!role) {
+      return res.status(400).json({ message: 'role required' });
+    }
+
+    const roleObj = await ensureRole(role);
+    const users = await User.findAll({ where: { email: emails } });
+
+    for (const user of users) {
+      if (action === 'remove') {
+        await user.removeRole(roleObj);
+      } else {
+        await user.addRole(roleObj);
+      }
+    }
+
+    res.json({
+      message: 'Roles updated',
+      updated: users.map(u => u.email),
+      role,
+      action: action || 'add',
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Fehler beim Aktualisieren der Rollen' });
+  }
+};

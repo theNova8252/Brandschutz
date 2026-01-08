@@ -1,35 +1,25 @@
 <script setup>
-import { onMounted } from 'vue';
-import { useUserStore } from './stores/userStore';
-import { useRouter } from 'vue-router';
+import { onMounted } from "vue";
+import { useUserStore } from "./stores/userStore";
+import { useRouter, useRoute } from "vue-router";
 
 const userStore = useUserStore();
 const router = useRouter();
+const route = useRoute();
 
 onMounted(() => {
   userStore.fetchMe();
 });
-
-const logout = async () => {
-  await userStore.logout();
-  router.push('/');
-};
 </script>
 
 <template>
-  <nav class="nav">
-    <router-link to="/chapters">📘 Kapitel</router-link>
+  <!-- Nav nur wenn eingeloggt -->
+  <nav v-if="userStore.isLoggedIn && route.path !== '/login'" class="nav">
+    <router-link to="/chapters">Kapitel</router-link>
 
-    <router-link
-      v-if="userStore.isSpecial"
-      to="/users"
-    >
-      👥 Benutzer
+    <router-link v-if="userStore.isAdmin" to="/users">
+      Benutzerverwaltung
     </router-link>
-
-    <button v-if="userStore.isLoggedIn" @click="logout">
-      Logout
-    </button>
   </nav>
 
   <router-view />
@@ -37,13 +27,30 @@ const logout = async () => {
 
 <style scoped>
 .nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background: #f4f4f4;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 18px;
+  background: rgba(2, 6, 23, 0.7);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  backdrop-filter: blur(12px);
 }
 
-button {
-  margin-left: auto;
+.nav a {
+  color: #e5e7eb;
+  text-decoration: none;
+  font-weight: 800;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.nav a.router-link-active {
+  border-color: rgba(96, 165, 250, 0.55);
+  background: rgba(96, 165, 250, 0.12);
 }
 </style>

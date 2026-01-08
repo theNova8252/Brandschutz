@@ -19,13 +19,13 @@ onMounted(async () => {
     <p v-if="!result">Prüfe Zertifikat…</p>
 
     <div v-else-if="result.valid">
-      ✅ <strong>Gültiges Zertifikat</strong><br />
+      <strong>Gültiges Zertifikat</strong><br />
       Name: {{ result.name }}<br />
       Datum: {{ new Date(result.issuedAt).toLocaleDateString('de-AT') }}
     </div>
 
     <div v-else>
-      ❌ Ungültiges Zertifikat
+      Ungültiges Zertifikat
     </div>
   </div>
 </template>

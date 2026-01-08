@@ -5,7 +5,7 @@ import UserProgress from '../models/UserProgress.js';
 import { chaptersSeedData } from './chaptersData.js';
 
 export const seedChapters = async () => {
-  console.log('🌱 Seeding chapters…');
+  console.log('Seeding chapters…');
 
   // Alles löschen – KEIN TRUNCATE, nur normales DELETE
   await ChapterSlide.destroy({ where: {} });
@@ -35,5 +35,5 @@ export const seedChapters = async () => {
     }
   }
 
-  console.log('✅ Chapters seeded');
+  console.log('Chapters seeded');
 };

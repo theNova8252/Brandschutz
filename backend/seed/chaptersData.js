@@ -21,7 +21,7 @@ Die Inhalte basieren auf der Brandschutzordnung der HTL Wien West.`,
         order: 2,
         title: 'Video: Was tun, wenn du Feuer entdeckst?',
         body: `Kurzes Schulungsvideo: Feuer im Gang, Brandmelder, Kanzlei/Portier verständigen, Verhalten im Klassenraum.`,
-        videoUrl: '/media/videos/htl_feuer_entdeckt.mp4',
+        videoUrl: '/media/videos/firefly.mp4',
       },
       {
         type: 'content',

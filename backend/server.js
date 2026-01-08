@@ -65,13 +65,21 @@ sequelize
     console.log('DB synced successfully');
     const Chapter = (await import('./models/chapters.js')).default;
 
+    const force = process.env.FORCE_SEED === 'true';
+
     const chapterCount = await Chapter.count();
-    if (chapterCount === 0) {
+
+    if (force) {
+      console.log('FORCE_SEED=true -> clearing + seeding chapters...');
+      await Chapter.destroy({ where: {}, truncate: true, cascade: true });
+      await seedChapters();
+    } else if (chapterCount === 0) {
       console.log('Seeding chapters (first run)...');
       await seedChapters();
     } else {
       console.log(`Skip seedChapters (already ${chapterCount} chapters in DB)`);
     }
+
     await seedRoles();
 
     app.listen(PORT, () => console.log(`Server auf http://localhost:${PORT}`));

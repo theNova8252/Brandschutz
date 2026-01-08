@@ -15,10 +15,20 @@
       </div>
     </header>
 
+    <!-- Firefly Companion - now outside slides -->
+    <div class="firefly-companion">
+      <div class="firefly-speech-bubble" v-if="getCurrentFireflyMessage()">
+        {{ getCurrentFireflyMessage() }}
+      </div>
+      <img :src="activeIndex === 0 ? fireflyWelcome : fireflyNormal" alt="Firefly Begleiter" class="firefly-image"
+        :class="{ 'firefly-bounce': true }" />
+    </div>
+
     <Swiper class="slides-swiper" :space-between="24" :slides-per-view="1" :centered-slides="true" grab-cursor
       @slideChange="onSlideChange" @swiper="onSwiperInit" :allowSlideNext="canGoNext" :allowSlidePrev="true">
       <SwiperSlide v-for="(slide, index) in chapterStore.currentChapter.slides" :key="slide.id">
         <div class="slide-card">
+          <!-- Remove firefly-companion div from here -->
           <p class="slide-type">
             {{ labelForType(slide.type) }}
           </p>
@@ -133,9 +143,27 @@
   <div v-else class="page page-center">
     <p v-if="chapterStore.chapterLoading">Kapitel wird geladen …</p>
     <p v-else-if="chapterStore.chapterError" class="error-box">{{ chapterStore.chapterError }}
-    <br />
-    <button class="back-btn secondary" @click="goBackToChapters">Zur Kapitelübersicht</button></p>
+      <br />
+      <button class="back-btn secondary" @click="goBackToChapters">Zur Kapitelübersicht</button>
+    </p>
   </div>
+  <Transition name="celebration">
+    <div v-if="showCelebration" class="celebration-overlay" @click="closeCelebration">
+      <div class="celebration-modal" @click.stop>
+        <div class="celebration-content">
+          <div class="celebration-icon">🎉</div>
+          <h2 class="celebration-title">Kapitel abgeschlossen!</h2>
+          <p class="celebration-message">
+            Glückwunsch! Du hast <strong>{{ chapterStore.currentChapter.title }}</strong> erfolgreich abgeschlossen.
+          </p>
+          <button class="celebration-btn" @click="closeCelebration">
+            Weiter zur Übersicht
+          </button>
+        </div>
+      </div>
+      <canvas ref="confettiCanvas" class="confetti-canvas"></canvas>
+    </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -146,6 +174,8 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 
 import { useChapterStore } from '../stores/chapterStore';
+import fireflyNormal from '../assets/images/firefly-normal.png';
+import fireflyWelcome from '../assets/images/firefly-welcome.png';
 
 const chapterStore = useChapterStore();
 const route = useRoute();
@@ -161,6 +191,8 @@ const isPlaying = ref({});          // Play/Pause Status pro Video
 const isMuted = ref({});            // Mute Status pro Video
 const currentTime = ref({});        // Aktuelle Zeit pro Video
 const progressRecord = ref(null);
+const showCelebration = ref(false);
+const confettiCanvas = ref(null);
 let swiperInstance = null;
 
 // Kapitel laden
@@ -177,6 +209,39 @@ onMounted(async () => {
   }
 });
 
+const getFireflyMessage = (slide, index) => {
+  if (index === 0) {
+    return "Hallo! Ich begleite dich durch dieses Kapitel! 🔥";
+  }
+
+  if (slide.type === 'video') {
+    if (videoCompleted.value[slide.id]) {
+      return "Super! Video geschafft! 🎉";
+    }
+    return "Schau dir das Video bis zum Ende an!";
+  }
+
+  if (slide.type === 'summary') {
+    return "Hier ist die Zusammenfassung! 📋";
+  }
+
+  if (visitedSlides.value[slide.id]) {
+    return "Gut gemacht! Weiter so! 💪";
+  }
+
+  return "Lies dir das aufmerksam durch! 📖";
+};
+
+// Add new computed property for current firefly message
+const getCurrentFireflyMessage = () => {
+  const chapter = chapterStore.currentChapter;
+  if (!chapter || !chapter.slides) return '';
+
+  const currentSlide = chapter.slides[activeIndex.value];
+  if (!currentSlide) return '';
+
+  return getFireflyMessage(currentSlide, activeIndex.value);
+};
 
 // Swiper-Instanz speichern
 const onSwiperInit = (swiper) => {
@@ -484,15 +549,84 @@ const finishChapter = async () => {
 
   try {
     await api.post(`/progress/complete/${chapterId}`);
-
     await chapterStore.fetchChapters();
 
-    alert("Kapitel erfolgreich abgeschlossen!");
-    router.push("/chapters");
+    // Zeige Celebration Pop-up
+    showCelebration.value = true;
+
+    // Starte Konfetti-Animation
+    await nextTick();
+    startConfetti();
   } catch (error) {
     console.error("Fehler beim Abschließen des Kapitels:", error);
     alert("Es gab einen Fehler beim Abschließen des Kapitels. Bitte versuche es erneut.");
   }
+};
+
+const closeCelebration = () => {
+  showCelebration.value = false;
+  router.push("/chapters");
+};
+
+// Konfetti-Animation
+const startConfetti = () => {
+  const canvas = confettiCanvas.value;
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = [];
+  const colors = ['#f97316', '#ea580c', '#fb923c', '#fdba74', '#fed7aa', '#16a34a', '#22c55e'];
+
+  // Erstelle Partikel
+  for (let i = 0; i < 150; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      r: Math.random() * 6 + 4,
+      d: Math.random() * 150 + 10,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tilt: Math.floor(Math.random() * 10) - 10,
+      tiltAngleIncremental: Math.random() * 0.07 + 0.05,
+      tiltAngle: 0
+    });
+  }
+
+  let animationId;
+  const draw = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach((p, index) => {
+      ctx.beginPath();
+      ctx.lineWidth = p.r / 2;
+      ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x + p.tilt + p.r, p.y);
+      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+      ctx.stroke();
+
+      p.tiltAngle += p.tiltAngleIncremental;
+      p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+      p.tilt = Math.sin(p.tiltAngle - index / 3) * 15;
+
+      if (p.y > canvas.height) {
+        particles[index] = {
+          ...p,
+          x: Math.random() * canvas.width,
+          y: -10
+        };
+      }
+    });
+
+    animationId = requestAnimationFrame(draw);
+  };
+  draw();
+
+  // Stoppe Animation nach 5 Sekunden
+  setTimeout(() => {
+    cancelAnimationFrame(animationId);
+  }, 5000);
 };
 
 
@@ -525,6 +659,7 @@ const saveProgress = async () => {
 .page-center {
   justify-content: center;
 }
+
 .header-right {
   display: flex;
   flex-direction: column;
@@ -814,5 +949,246 @@ const saveProgress = async () => {
   max-width: 420px;
 }
 
+.celebration-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
+}
 
+.celebration-modal {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 24px;
+  border: 2px solid #f97316;
+  padding: 48px 40px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(249, 115, 22, 0.4);
+  animation: modalBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: relative;
+  z-index: 10000;
+}
+
+@keyframes modalBounce {
+  0% {
+    transform: scale(0.3) rotate(-10deg);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.05) rotate(2deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.celebration-content {
+  text-align: center;
+}
+
+.celebration-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: iconBounce 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes iconBounce {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    transform: translateY(-10px) scale(1.1);
+  }
+}
+
+.celebration-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #f97316, #fb923c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+  animation: titleGlow 2s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.6));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 16px rgba(249, 115, 22, 0.9));
+  }
+}
+
+.celebration-message {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #d1d5db;
+  margin-bottom: 32px;
+}
+
+.celebration-message strong {
+  color: #f97316;
+  font-weight: 600;
+}
+
+.celebration-btn {
+  padding: 14px 32px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.4);
+}
+
+.celebration-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(249, 115, 22, 0.6);
+}
+
+.celebration-btn:active {
+  transform: translateY(0);
+}
+
+.confetti-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Transition */
+.celebration-enter-active,
+.celebration-leave-active {
+  transition: opacity 0.4s ease;
+}
+
+.celebration-enter-from,
+.celebration-leave-to {
+  opacity: 0;
+}
+
+.firefly-companion {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+  z-index: 100;
+  max-width: 320px;
+}
+
+.firefly-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.4));
+  transition: transform 0.3s ease;
+}
+
+.firefly-bounce {
+  animation: fireflyFloat 3s ease-in-out infinite;
+}
+
+@keyframes fireflyFloat {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-12px) rotate(2deg);
+  }
+}
+
+.firefly-speech-bubble {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 18px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.4;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.4);
+  position: relative;
+  max-width: 280px;
+  animation: bubblePop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  text-align: right;
+}
+
+.firefly-speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: 50px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 12px solid #ea580c;
+}
+
+@keyframes bubblePop {
+  0% {
+    transform: scale(0.8) translateY(10px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .firefly-companion {
+    bottom: 20px;
+    right: 20px;
+    max-width: 240px;
+    gap: 12px;
+  }
+
+  .firefly-image {
+    width: 90px;
+    height: 90px;
+  }
+
+  .firefly-speech-bubble {
+    font-size: 0.85rem;
+    padding: 12px 16px;
+    max-width: 220px;
+  }
+
+  .firefly-speech-bubble::after {
+    right: 35px;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #ea580c;
+    bottom: -9px;
+  }
+}
 </style>

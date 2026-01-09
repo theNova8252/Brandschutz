@@ -1,166 +1,434 @@
 
 export const chaptersSeedData = [
   {
-    slug: 'brandfall',
-    order: 1,
-    title: 'Verhalten im Brandfall',
-    heroImage: '/media/images/brandfall_header.jpg',
-    introVideo: '/media/videos/htl_brandfall_intro.mp4',
-    slides: [
-      {
-        type: 'content',
-        order: 1,
-        title: 'Einführung: Verhalten im Brandfall',
-        body: `Bei einem Brand ist es wichtig, ruhig zu bleiben und strukturiert vorzugehen. 
-Dieses Kapitel zeigt dir, wie du Alarm auslöst, dich in Sicherheit bringst und wann ein Löschversuch sinnvoll ist. 
-Die Inhalte basieren auf der Brandschutzordnung der HTL Wien West.`,
-        imageUrl: '/media/images/brandfall_ruhe_bewahren.png',
-      },
-      {
-        type: 'video',
-        order: 2,
-        title: 'Video: Was tun, wenn du Feuer entdeckst?',
-        body: `Kurzes Schulungsvideo: Feuer im Gang, Brandmelder, Kanzlei/Portier verständigen, Verhalten im Klassenraum.`,
-        videoUrl: '/media/videos/firefly.mp4',
-      },
-      {
-        type: 'content',
-        order: 3,
-        title: 'Feuer entdeckt – korrekt melden',
-        body: `Wenn du selbst ein Feuer siehst:
-- Betätige den Brandmelder **oder** verständige Kanzlei/Portier.
-- Melde, **wo** es brennt und **was** passiert ist.
-- Bleib ruhig und folge den Anweisungen der Lehrpersonen bzw. des Brandschutzteams.`,
-        imageUrl: '/media/images/brandmelder.png',
-      },
-      {
-        type: 'content',
-        order: 4,
-        title: 'Verhalten in der Klasse beim Alarm',
-        body: `Beim Alarm im Unterricht:
-- Fenster, wenn möglich, schließen.
-- Nur nötige Sachen mitnehmen.
-- Tür schließen (nicht versperren).
-- Geordnet den Fluchtweg benutzen und zum Sammelplatz gehen.`,
-        imageUrl: '/media/images/klasse_evakuierung.png',
-      },
-      {
-        type: 'content',
-        order: 5,
-        title: 'Löschen mit Feuerlöschern',
-        body: `In der Schule stehen Nasslöscher zur Verfügung. Bedienung:
-1. Sicherungslasche abziehen
-2. Schlagknopf kräftig einschlagen
-3. Löschpistole betätigen
+  slug: 'brandfall',
+  order: 1,
+  title: 'Verhalten im Brandfall',
+  heroImage: null,
+  introVideo: null,
+  slides: [
+    // Überblick
+    {
+      type: 'content',
+      order: 1,
+      title: 'Überblick: Melden – Flüchten – Löschen',
+      body: `Im Brandfall zählt: ruhig bleiben und richtig handeln.
 
-Wichtig: Selbstschutz geht vor – nur kleine Entstehungsbrände löschen.`,
-        imageUrl: '/media/images/feuerloescher_anleitung.png',
-        videoUrl: '/media/videos/htl_feuerloescher_demo.mp4',
-      },
-      {
-        type: 'content',
-        order: 6,
-        title: 'Flucht möglich oder nicht?',
-        body: `Zuerst prüfen:
-- **Flucht möglich:** Fluchtweg nutzen, Sammelplatz aufsuchen.
-- **Flucht nicht möglich (Gang verraucht):**
-  - In der Klasse bleiben
-  - Tür schließen, feuchtes Tuch vor den Türschlitz
-  - Am Fenster bemerkbar machen
-  - Auf Feuerwehr warten.`,
-        imageUrl: '/media/images/rauch_im_gang.png',
-      },
-      {
-        type: 'summary',
-        order: 7,
-        title: 'Merkliste: Verhalten im Brandfall',
-        body: `- Alarm auslösen (Brandmelder / Kanzlei / Portier)\n- Fenster schließen, Klasse geordnet verlassen\n- Türen schließen, aber nicht versperren\n- Fluchtwege nutzen, Lift nie verwenden\n- Bei Rauch im Gang in der Klasse bleiben und bemerkbar machen\n- Nur kleine Brände löschen – Selbstschutz geht vor\n- Direkt zum Sammelplatz, Vollständigkeit melden`,
-        imageUrl: '/media/images/checkliste_brandfall.png',
-      },
-    ],
-  },
+Melden
+- Alarm auslösen (Brandmelder / Notrufschalter)
+- Hilfe holen (Lehrperson, Portier, Sekretariat)
 
-  {
-    slug: 'brandverhuetung',
-    order: 2,
-    title: 'Brandverhütung',
-    heroImage: '/media/images/brandverhuetung_header.jpg',
-    introVideo: '/media/videos/htl_brandverhuetung_intro.mp4',
-    slides: [
-      {
-        type: 'content',
-        order: 1,
-        title: 'Warum Brandverhütung wichtig ist',
-        body: `Brandverhütung bedeutet, Brände von Anfang an zu vermeiden. 
-Dazu gehören Rauchverbot, korrektes Verhalten mit Feuer und das Erkennen von Gefahrenquellen.`,
-        imageUrl: '/media/images/brandverhuetung_icons.png',
-      },
-      {
-        type: 'content',
-        order: 2,
-        title: 'Rauchverbot am Schulgelände',
-        body: `Am gesamten Schulgelände gilt ein Rauchverbot. 
-Zigaretten und andere Rauchwaren können leicht Glutnester und Brände verursachen – daher ist Rauchen verboten.`,
-        imageUrl: '/media/images/rauchverbot_schild.png',
-      },
-      {
-        type: 'content',
-        order: 3,
-        title: 'Umgang mit Feuer & offenen Flammen',
-        body: `Offene Flammen (z. B. Kerzen, Feuerzeuge, Bunsenbrenner) sind im Gebäude nur in klar geregelten Unterrichtssituationen erlaubt. 
-Unbeaufsichtigte Flammen sind ein hohes Risiko und daher verboten.`,
-        imageUrl: '/media/images/offene_flamme_verboten.png',
-      },
-      {
-        type: 'summary',
-        order: 4,
-        title: 'Merkliste: Brandverhütung',
-        body: `- Rauchen am Schulgelände ist verboten\n- Keine offenen Flammen im Schulgebäude\n- Auffällige Brandgefahren (verschmorte Steckdosen, überhitzte Geräte) sofort melden`,
-        imageUrl: '/media/images/checkliste_brandverhuetung.png',
-      },
-    ],
-  },
+Flüchten
+- Fluchtweg-Schildern folgen
+- Türen schließen (nicht versperren)
+- Kein Lift
 
-  {
-    slug: 'elektrische-geraete',
-    order: 3,
-    title: 'Elektrische Geräte & Akkus',
-    heroImage: '/media/images/elektro_header.jpg',
-    introVideo: '/media/videos/htl_elektrisch_intro.mp4',
-    slides: [
-      {
-        type: 'content',
-        order: 1,
-        title: 'E-Bikes & E-Roller',
-        body: `E-Bikes und E-Roller dürfen nicht im Schulgebäude abgestellt werden. 
-Beschädigte oder überhitzte Akkus stellen ein erhebliches Brandrisiko dar.`,
-        imageUrl: '/media/images/ebike_verboten.png',
-      },
-      {
-        type: 'content',
-        order: 2,
-        title: 'Akkus & Ladeverbot',
-        body: `Das Laden von Akkus aller Art ist im Schulgebäude grundsätzlich verboten (E-Scooter, E-Bike, Powerbank, etc.). 
-Defekte oder überlastete Akkus können explosionsartig brennen.`,
-        imageUrl: '/media/images/akku_warnsymbol.png',
-      },
-      {
-        type: 'content',
-        order: 3,
-        title: 'Private Elektrogeräte',
-        body: `Private Elektrogeräte (Wasserkocher, Heizlüfter, Kaffeemaschinen usw.) dürfen nicht einfach eingesteckt werden. 
-Nur von der Schule freigegebene Geräte sind erlaubt.`,
-        imageUrl: '/media/images/steckdose_ueberlastet.png',
-      },
-      {
-        type: 'summary',
-        order: 4,
-        title: 'Merkliste: Elektrische Geräte',
-        body: `- Keine E-Bikes/E-Roller im Gebäude abstellen\n- Akkus nicht in der Schule laden\n- Private Elektrogeräte nur mit Freigabe verwenden`,
-        imageUrl: '/media/images/checkliste_elektro.png',
-      },
-    ],
-  },
+Löschen
+- Nur wenn es ein kleiner Entstehungsbrand ist
+- Eigenschutz geht vor`,
+      imageUrl: '/media/images/melden_fluechten_loeschen.png',
+    },
+    // Interaktiv: Entscheidungsteil (Buttons kommen im Frontend)
+    {
+      type: 'content',
+      order: 2,
+      title: 'Interaktiv: Brand entdeckt',
+      body: `Du siehst Rauch/Flammen. Wähle aus, was du als Nächstes machst.`,
+      imageUrl: null,
+    },
+
+    {
+      type: 'summary',
+      order: 3,
+      title: 'Merksatz',
+      body: `Melden – Flüchten – Löschen
+Immer in dieser Reihenfolge. Eigenschutz zuerst!`,
+      imageUrl: null,
+    },
+    {
+  type: 'video',
+  order: 4,
+  title: 'Video: Verhalten im Brandfall (Schule)',
+  body: `Schau dir das Video bis zum Ende an – danach üben wir das Ganze interaktiv.`,
+  videoUrl: '/media/videos/firefly.mp4',
+},
+
+    // 1.1 Brand melden
+    {
+      type: 'content',
+      order: 5,
+      title: '1.1 Brand melden',
+      body: `Wenn du einen Brand bemerkst, muss SOFORT gemeldet werden.
+
+So meldest du richtig:
+- Brandmelder / Notrufschalter betätigen
+- Lehrperson/Portier informieren
+- Nicht davon ausgehen: „Das macht schon wer anderer“`,
+      imageUrl: '/media/images/brandmelder.png',
+    },
+
+    // Interaktiv: Meldung Simulation
+    {
+      type: 'content',
+      order: 6,
+      title: 'Interaktiv: Brandmeldung absetzen',
+      body: `Du bist die erste Person am Brandort.
+Beantworte die Fragen wie bei einem echten Notruf.`,
+      imageUrl: null,
+    },
+
+    {
+      type: 'content',
+      order: 7,
+      title: 'Checkliste: Brandmeldung',
+      body: `- WAS ist passiert? (Brand/Rauch/Explosion)
+- WO ist es? (Gebäude/Stock/Raum)
+- VERLETZTE? (ja/nein, wie viele)
+- WER meldet? (Name)
+- WARTEN auf Rückfragen`,
+      imageUrl: null,
+    },
+
+    // 1.2 In Sicherheit bringen
+    {
+      type: 'content',
+      order: 8,
+      title: '1.2 In Sicherheit bringen',
+      body: `ZIEL: raus aus der Gefahr, ohne Chaos.
+
+- Fluchtwege nutzen (Schilder folgen)
+- Tür schließen, damit Rauch/Feuer sich langsamer ausbreitet
+- Kein Lift – nur Stiegenhäuser
+- Zum Sammelplatz gehen`,
+      imageUrl: '/media/images/fluchtweg.png',
+    },
+
+    {
+      type: 'content',
+      order: 9,
+      title: 'Interaktiv: Richtig evakuieren',
+      body: `Triff schnelle Entscheidungen und sieh die Konsequenzen.`,
+      imageUrl: null,
+    },
+
+    {
+      type: 'summary',
+      order: 10,
+      title: 'Merksatz',
+      body: `Geordnet raus. Türen zu. Lift nie. Sammelplatz finden.`,
+      imageUrl: null,
+    },
+
+    // 1.3 Löschversuch
+    {
+      type: 'content',
+      order: 11,
+      title: '1.3 Löschversuch unternehmen',
+      body: `Ein Löschversuch ist nur sinnvoll, wenn:
+
+- Es ein kleiner Entstehungsbrand ist
+- Du einen freien Rückzugsweg hast
+- Du dich nicht in Gefahr bringst`,
+      imageUrl: null,
+    },
+    {
+      type: 'content',
+      order: 12,
+      title: 'Interaktiv: Löschen oder flüchten?',
+      body: `Wähle für jede Situation: Löschen oder Flüchten*.`,
+      imageUrl: null,
+    },
+
+    {
+      type: 'summary',
+      order: 13,
+      title: 'Merksatz',
+      body: `Eigenschutz zuerst.
+Wenn du unsicher bist: nicht löschen – flüchten & melden.`,
+      imageUrl: null,
+    },
+    
+  ],
+},
+
+
+ {
+  slug: 'brandverhuetung',
+  order: 2,
+  title: 'Brandverhütung',
+  heroImage: null,
+  introVideo: null,
+  slides: [
+    {
+      type: 'content',
+      order: 1,
+      title: 'Warum Brandverhütung wichtig ist',
+      body: `Brandverhütung heißt: Brände gar nicht erst entstehen lassen.
+
+In der Schule sind viele Menschen, enge Wege und viel Technik – deshalb zählt Vorbeugung.`,
+      imageUrl: null,
+    },
+
+    {
+      type: 'content',
+      order: 2,
+      title: 'Übersicht: Wichtige Verbote',
+      body: `Diese Regeln gelten im gesamten Schulbereich:
+
+- Rauchverbot
+- Keine offenen Flammen
+- Keine privaten Elektrogeräte ohne Freigabe
+- Akkus & E-Fahrzeuge nicht laden
+- Fluchtwege freihalten`,
+      imageUrl: '/media/images/verbotschild.png', 
+    },
+
+    {
+      type: 'content',
+      order: 3,
+      title: 'Typische Brandverursacher',
+      body: `Brände entstehen oft durch Alltagsfehler:
+
+- Glut / Zigarettenreste
+- Überlastete Steckdosen
+- Defekte Akkus
+- Offene Flammen
+- Unachtsamkeit`,
+      imageUrl: null,
+    },
+
+    // 2.1
+    {
+      type: 'content',
+      order: 4,
+      title: '2.1 Rauchverbot',
+      body: `Am gesamten Schulgelände gilt Rauchverbot.
+
+Grund: Glutreste, Wind und Müll können sehr schnell Feuer auslösen – auch draußen.`,
+      imageUrl: '/media/images/rauchverbot.png',
+    },
+
+    {
+      type: 'content',
+      order: 5,
+      title: 'Interaktiv: Gefahren erkennen',
+      body: `Klicke alle Dinge an, die Brandgefahr bedeuten.
+Du musst alle richtigen markieren, um weiterzugehen.`,
+      imageUrl: null,
+    },
+
+    {
+      type: 'summary',
+      order: 6,
+      title: 'Merksatz',
+      body: `Glut ist nie „harmlos“.
+Rauchverbot schützt Menschen und Gebäude.`,
+      imageUrl: null,
+    },
+
+    // 2.2
+    {
+      type: 'content',
+      order: 7,
+      title: '2.2 Umgang mit Feuer & offenen Flammen',
+      body: `Offene Flammen sind im Schulgebäude grundsätzlich verboten.
+
+Schon eine kleine Flamme + Papier/Staub/Materialien kann reichen.`,
+      imageUrl: '/media/images/offenesFeuer.png',
+    },
+
+    {
+      type: 'content',
+      order: 8,
+      title: 'Was ist erlaubt – was nicht?',
+      body: `Erlaubt (nur mit Aufsicht):
+- Bunsenbrenner im Unterricht
+- Geräte, die von Lehrpersonen freigegeben sind
+
+Nicht erlaubt:
+- Kerzen im Klassenraum
+- Feuerzeuge „zum Spaß“
+- Eigenmächtige Experimente`,
+      imageUrl: null,
+    },
+
+    {
+      type: 'content',
+      order: 9,
+      title: 'Wenn eine Flamme reicht',
+      body: `Mini-Szenario:
+Ein Feuerzeug wird kurz „ausprobiert“. Jemand erschrickt, lässt es fallen – Papier fängt Feuer, Rauch füllt den Raum.
+
+Brandverhütung heißt: solche Situationen gar nicht entstehen lassen.`,
+      imageUrl: null,
+    },
+
+    {
+      type: 'summary',
+      order: 10,
+      title: 'Abschluss',
+      body: `Brandverhütung beginnt bei dir:
+Regeln einhalten, Gefahren melden, keine Experimente.`,
+      imageUrl: null,
+    },
+  ],
+},
+
+
+
+ {
+  slug: "elektrische-geraete",
+  order: 3,
+  title: "Elektrische Geräte & Akkus",
+  heroImage: "/media/images/elektro_header.jpg",         // optional
+  introVideo: null,                                     // optional
+  slides: [
+    {
+      type: "content",
+      order: 1,
+      title: "Überblick: Warum Elektrik ein Risiko ist",
+      body: `Akkus speichern viel Energie. Wenn etwas schiefgeht, wird es schnell gefährlich.
+
+✓ Hitze + Energie = Brandrisiko
+✓ Rauch kann giftig sein
+✓ Akkubrände sind schwer zu löschen`,
+      imageUrl: null,
+    },
+
+    {
+      type: "content",
+      order: 2,
+      title: "Typische Brandverursacher",
+      body: `Klick dich durch: Welche Dinge siehst du im Alltag?
+
+- beschädigte Kabel
+- billige Netzteile
+- überlastete Mehrfachsteckdosen
+- Akkus, die heiß werden oder aufblähen`,
+      imageUrl: null,
+    },
+
+    {
+      type: "content",
+      order: 3,
+      title: "Elektrik = Risiko (Mini-Fazit)",
+      body: `Wenn du unsicher bist:
+✓ lieber ausstecken
+✓ Abstand halten
+✓ Lehrperson informieren`,
+      imageUrl: null,
+    },
+
+    // ===== 3.1 E-Bikes / E-Roller =====
+    {
+      type: "content",
+      order: 4,
+      title: "3.1 E-Bikes & E-Roller",
+      body: `E-Bikes und E-Roller dürfen nicht im Schulgebäude abgestellt werden.
+
+Warum?
+- Akku kann beschädigt sein (Sturz, Wasser, Hitze)
+- Im Gebäude sind Fluchtwege und viele Menschen
+- Ein Akkubrand eskaliert schnell`,
+      imageUrl: "/media/images/E-Scooter.jpg", // placeholder
+    },
+
+    {
+      type: "content",
+      order: 5,
+      title: "Risikostufen: Akku-Check",
+      body: `Merke dir diese 3 Stufen (wie eine Ampel):
+      🟢 Grün (normal)
+      🟡 Gelb (Warnung)
+      🔴 Rot (Gefahr) `,
+      imageUrl: null,
+    },
+
+    {
+      type: "content",
+      order: 6,
+      title: "Interaktiv: Risiko richtig einschätzen",
+      body: `Tippe die passende Stufe an.`,
+      imageUrl: null,
+    },
+
+    {
+      type: "content",
+      order: 7,
+      title: "Interaktiv: Wo Roller abstellen?",
+      body: `Du bist mit dem E-Roller da. Wähle ALLE sicheren Abstellorte aus.`,
+      imageUrl: null,
+    },
+
+    {
+      type: "summary",
+      order: 8,
+      title: "Merksatz",
+      body: `E-Roller/E-Bike bleibt draußen.
+Akkus + Gebäude = unnötiges Risiko.`,
+      imageUrl: null,
+    },
+
+    // ===== 3.2 Akkus & Ladeverbot =====
+    {
+      type: "content",
+      order: 9,
+      title: "3.2 Akkus & Ladeverbot",
+      body: `Warum Ladeverbot?
+- Ladegeräte können überhitzen
+- Akkus können defekt sein
+- Überlastung von Steckdosen ist gefährlich`,
+      imageUrl: "/media/images/Ladeverbot.jpg", // placeholder
+    },
+
+    {
+      type: "content",
+      order: 10,
+      title: "Interaktiv: Was darf NICHT geladen werden?",
+      body: `Wähle ALLE Dinge aus, die in der Schule nicht geladen werden dürfen.`,
+      imageUrl: null,
+    },
+
+    {
+      type: "content",
+      order: 11,
+      title: "Abschlussfrage: Akku wird heiß",
+      body: `Dein Akku wird beim Laden heiß und riecht komisch. Was machst du?`,
+      imageUrl: null,
+    },
+
+    // ===== 3.3 Private Elektrogeräte =====
+    {
+      type: "content",
+      order: 12,
+      title: "3.3 Private Elektrogeräte",
+      body: `Private Geräte sind oft nicht geprüft (Netzteil/Kabel/Leistung).
+
+Schulgerät vs. Privatgerät:
+✓ Schulgerät: freigegeben, geprüft
+✗ Privatgerät: unbekanntes Risiko`,
+      imageUrl: "/media/images/handyladen.jpg", // placeholder
+    },
+
+    {
+      type: "content",
+      order: 13,
+      title: "Interaktiv: Was ist das Risiko?",
+      body: `Wähle ALLE typischen Risiko-Faktoren aus.`,
+      imageUrl: null,
+    },
+
+    {
+      type: "summary",
+      order: 14,
+      title: "Fazit: Elektrik = Risiko",
+      body: `Billig-Netzteil, heißer Akku, volle Steckdose?
+Dann: AUSSTECKEN + MELDEN.`,
+      imageUrl: null,
+    },
+  ],
+},
+
 
   {
     slug: 'flucht-und-rettungswege',
@@ -170,36 +438,67 @@ Nur von der Schule freigegebene Geräte sind erlaubt.`,
     introVideo: '/media/videos/htl_fluchtwege_intro.mp4',
     slides: [
       {
-        type: 'content',
-        order: 1,
-        title: 'Fluchtwege freihalten',
-        body: `Fluchtwege müssen immer frei bleiben. 
-Abgestellte Gegenstände im Gang können zur Todesfalle werden, weil sie Flucht verzögern oder blockieren.`,
-        imageUrl: '/media/images/fluchtweg_frei.png',
-      },
+  type: 'content',
+  order: 1,
+  title: 'Fluchtwege freihalten',
+  body: `
+Fluchtwege sind **Lebenswege**.
+
+- Gänge, Türen und Stiegen müssen immer frei bleiben
+- Auch kurz abgestellte Gegenstände sind gefährlich
+- Im Rauch sieht man Hindernisse oft zu spät
+
+👉 Merke: Was heute nur stört, kann im Notfall tödlich sein.
+  `,
+  imageUrl: '/media/images/fluchtVersperren.png',
+},
+
       {
-        type: 'content',
-        order: 2,
-        title: 'Notausgänge & Beschilderung',
-        body: `Merke dir, wo sich in deinem Bereich Notausgänge und Stiegenhäuser befinden. 
-Im Ernstfall folgst du den grünen Fluchtweg-Schildern.`,
-        imageUrl: '/media/images/fluchtweg_schild.png',
-      },
-      {
-        type: 'content',
-        order: 3,
-        title: 'Liftverbot im Brandfall',
-        body: `Der Lift darf im Brandfall niemals verwendet werden – es besteht Lebensgefahr. 
-Benutze immer die Stiegenhäuser.`,
-        imageUrl: '/media/images/lift_verboten.png',
-      },
-      {
-        type: 'summary',
-        order: 4,
-        title: 'Merkliste: Flucht- und Rettungswege',
-        body: `- Fluchtwege nie zustellen\n- Notausgänge kennen\n- Lift im Brandfall nie benutzen\n- Immer zum Sammelplatz gehen`,
-        imageUrl: '/media/images/checkliste_fluchtwege.png',
-      },
+  type: 'content',
+  order: 2,
+  title: 'Notausgänge & Beschilderung',
+  body: `
+Im Brandfall zählt Orientierung.
+
+- Notausgänge sind mit **grünen Fluchtweg-Schildern** markiert
+- Diese Schilder sind auch bei Rauch sichtbar
+- Präge dir Wege **vorher** ein, nicht erst im Notfall
+
+🧠 Challenge: Weißt du jetzt, wo dein nächster Notausgang ist?
+  `,
+  imageUrl: '/media/images/fluchtweg.png',
+},
+
+     {
+  type: 'content',
+  order: 3,
+  title: 'Liftverbot im Brandfall',
+  body: `
+🚫 **Warum du niemals den Lift benutzen darfst:**
+
+- Stromausfall kann den Lift stoppen
+- Rauch kann in den Schacht eindringen
+- Du kannst eingeschlossen werden
+
+✅ **Richtig:** Immer Stiegenhäuser benutzen – auch wenn es länger dauert.
+  `,
+  imageUrl: '/media/images/aufzugverbot.png',
+},
+{
+  type: 'summary',
+  order: 4,
+  title: 'Kurz & Klar – Das musst du wissen',
+  body: `
+- Fluchtwege immer freihalten
+- Notausgänge & Schilder kennen
+- Lift im Brandfall tabu
+- Zum Sammelplatz gehen
+
+✔️ Wenn du das kannst, bist du vorbereitet.
+  `,
+  imageUrl: '/media/images/fluchtkarte.jpg',
+},
+
     ],
   },
 

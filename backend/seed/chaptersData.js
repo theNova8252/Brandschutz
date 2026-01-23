@@ -283,263 +283,400 @@ Regeln einhalten, Gefahren melden, keine Experimente.`,
   heroImage: "/media/images/elektro_header.jpg",         // optional
   introVideo: null,                                     // optional
   slides: [
-    {
-      type: "content",
-      order: 1,
-      title: "Überblick: Warum Elektrik ein Risiko ist",
-      body: `Akkus speichern viel Energie. Wenn etwas schiefgeht, wird es schnell gefährlich.
+  {
+    type: "content",
+    order: 1,
+    title: "3 Beschreibung: Elektrische Geräte",
+    body: `Elektrische Geräte und Akkus sind im Alltag praktisch – aber sie können schnell zum Brandrisiko werden.
 
-✓ Hitze + Energie = Brandrisiko
-✓ Rauch kann giftig sein
-✓ Akkubrände sind schwer zu löschen`,
-      imageUrl: null,
-    },
+Wichtig ist:
+- nur intakte Geräte verwenden
+- keine Bastellösungen / Billig-Netzteile
+- Kabel und Stecker regelmäßig prüfen`,
+    imageUrl: null,
+  },
 
-    {
-      type: "content",
-      order: 2,
-      title: "Typische Brandverursacher",
-      body: `Klick dich durch: Welche Dinge siehst du im Alltag?
+  {
+    type: "content",
+    order: 2,
+    title: "Überblick der Risiken",
+    body: `Die häufigsten Ursachen sind:
 
-- beschädigte Kabel
-- billige Netzteile
-- überlastete Mehrfachsteckdosen
-- Akkus, die heiß werden oder aufblähen`,
-      imageUrl: null,
-    },
+- Überhitzung (z. B. beim Laden)
+- beschädigte Akkus (Sturz, Wasser, Alter)
+- überlastete Steckdosen/Mehrfachstecker
 
-    {
-      type: "content",
-      order: 3,
-      title: "Elektrik = Risiko (Mini-Fazit)",
-      body: `Wenn du unsicher bist:
-✓ lieber ausstecken
-✓ Abstand halten
-✓ Lehrperson informieren`,
-      imageUrl: null,
-    },
+⚠️ Wenn etwas heiß wird, riecht oder sich aufbläht: sofort ausstecken und melden.`,
+    imageUrl: "/media/images/elektro_risiken.png",
+  },
 
-    // ===== 3.1 E-Bikes / E-Roller =====
-    {
-      type: "content",
-      order: 4,
-      title: "3.1 E-Bikes & E-Roller",
-      body: `E-Bikes und E-Roller dürfen nicht im Schulgebäude abgestellt werden.
+  // ===== 3.1 E-Bikes / E-Roller =====
+  {
+    type: "content",
+    order: 3,
+    title: "3.1 E-Bikes & E-Roller",
+    body: `E-Bikes und E-Roller haben leistungsstarke Akkus.
+
+Darum gilt:
+- nicht im Schulgebäude abstellen
+- nicht im Gebäude laden
+- bei Schäden (Sturz/Hitze/Wasser) besonders vorsichtig sein`,
+    imageUrl: "/media/images/E-Scooter.jpg",
+  },
+
+  {
+    type: "content",
+    order: 4,
+    title: "Warum nicht im Gebäude abstellen?",
+    body: `Im Gebäude sind viele Menschen und Fluchtwege.
+
+Ein Akku-Brand:
+- entwickelt sehr hohe Temperaturen
+- kann starken, giftigen Rauch erzeugen
+- ist schwer zu löschen
+
+✅ Abstellen ist erlaubt:
+- nur draußen (z. B. Fahrradständer / markierter Außenbereich)
+- so, dass Eingänge & Fluchtwege frei bleiben.`,
+    imageUrl: null,
+  },
+
+  {
+    type: "content",
+    order: 5,
+    title: "Übung: Wo darf ich abstellen?",
+    body: `Wähle 4 richtige Abstellorte aus.`,
+    imageUrl: null,
+  },
+
+  {
+    type: "summary",
+    order: 6,
+    title: "Merksatz: E-Bikes & E-Roller",
+    body: `E-Roller/E-Bike bleibt draußen.
+Fluchtwege frei – Akkus nicht im Gebäude.`,
+    imageUrl: null,
+  },
+
+  // ===== 3.2 Akkus & Ladeverbot =====
+  {
+    type: "content",
+    order: 7,
+    title: "3.2 Akkus & Ladeverbot",
+    body: `In der Schule gilt: Privat-Akkus und unbekannte Ladegeräte sind ein Risiko.
 
 Warum?
-- Akku kann beschädigt sein (Sturz, Wasser, Hitze)
-- Im Gebäude sind Fluchtwege und viele Menschen
-- Ein Akkubrand eskaliert schnell`,
-      imageUrl: "/media/images/E-Scooter.jpg", // placeholder
-    },
-
-    {
-      type: "content",
-      order: 5,
-      title: "Risikostufen: Akku-Check",
-      body: `Merke dir diese 3 Stufen (wie eine Ampel):
-      🟢 Grün (normal)
-      🟡 Gelb (Warnung)
-      🔴 Rot (Gefahr) `,
-      imageUrl: null,
-    },
-
-    {
-      type: "content",
-      order: 6,
-      title: "Interaktiv: Risiko richtig einschätzen",
-      body: `Tippe die passende Stufe an.`,
-      imageUrl: null,
-    },
-
-    {
-      type: "content",
-      order: 7,
-      title: "Interaktiv: Wo Roller abstellen?",
-      body: `Du bist mit dem E-Roller da. Wähle ALLE sicheren Abstellorte aus.`,
-      imageUrl: null,
-    },
-
-    {
-      type: "summary",
-      order: 8,
-      title: "Merksatz",
-      body: `E-Roller/E-Bike bleibt draußen.
-Akkus + Gebäude = unnötiges Risiko.`,
-      imageUrl: null,
-    },
-
-    // ===== 3.2 Akkus & Ladeverbot =====
-    {
-      type: "content",
-      order: 9,
-      title: "3.2 Akkus & Ladeverbot",
-      body: `Warum Ladeverbot?
 - Ladegeräte können überhitzen
-- Akkus können defekt sein
-- Überlastung von Steckdosen ist gefährlich`,
-      imageUrl: "/media/images/Ladeverbot.jpg", // placeholder
-    },
-
-    {
-      type: "content",
-      order: 10,
-      title: "Interaktiv: Was darf NICHT geladen werden?",
-      body: `Wähle ALLE Dinge aus, die in der Schule nicht geladen werden dürfen.`,
-      imageUrl: null,
-    },
-
-    {
-      type: "content",
-      order: 11,
-      title: "Abschlussfrage: Akku wird heiß",
-      body: `Dein Akku wird beim Laden heiß und riecht komisch. Was machst du?`,
-      imageUrl: null,
-    },
-
-    // ===== 3.3 Private Elektrogeräte =====
-    {
-      type: "content",
-      order: 12,
-      title: "3.3 Private Elektrogeräte",
-      body: `Private Geräte sind oft nicht geprüft (Netzteil/Kabel/Leistung).
-
-Schulgerät vs. Privatgerät:
-✓ Schulgerät: freigegeben, geprüft
-✗ Privatgerät: unbekanntes Risiko`,
-      imageUrl: "/media/images/handyladen.jpg", // placeholder
-    },
-
-    {
-      type: "content",
-      order: 13,
-      title: "Interaktiv: Was ist das Risiko?",
-      body: `Wähle ALLE typischen Risiko-Faktoren aus.`,
-      imageUrl: null,
-    },
-
-    {
-      type: "summary",
-      order: 14,
-      title: "Fazit: Elektrik = Risiko",
-      body: `Billig-Netzteil, heißer Akku, volle Steckdose?
-Dann: AUSSTECKEN + MELDEN.`,
-      imageUrl: null,
-    },
-  ],
-},
-
+- defekte Akkus reagieren unvorhersehbar
+- Steckdosen können überlastet werden`,
+    imageUrl: "/media/images/Ladeverbot.png",
+  },
 
   {
-    slug: 'flucht-und-rettungswege',
+    type: "content",
+    order: 8,
+    title: "Überhitzung: Warnzeichen",
+    body: `Achte auf diese Warnzeichen:
+
+- Gerät/Akku wird ungewöhnlich heiß
+- Geruch nach Plastik/Chemie
+- Akku bläht sich auf
+- Knacken/Zischen oder Rauch
+
+⚠️ Dann gilt: ausstecken – Abstand – Lehrperson/Portier informieren.`,
+    imageUrl: null,
+  },
+
+  {
+    type: "content",
+    order: 9,
+    title: "Übung: Laden in der Schule – darf / darf nicht",
+    body: `Ziehe jeden Gegenstand in die richtige Box.`,
+    imageUrl: null,
+  },
+
+  {
+    type: "summary",
+    order: 10,
+    title: "Merksatz: Akkus & Laden",
+    body: `Nur freigegebene Schulgeräte laden.
+Bei Hitze/Geruch: ausstecken und melden.`,
+    imageUrl: null,
+  },
+
+  // ===== 3.3 Private Elektrogeräte =====
+  {
+    type: "content",
+    order: 11,
+    title: "3.3 Private Elektrogeräte",
+    body: `Schulgerät vs. Privatgerät:
+
+✅ Schulgerät
+- von der Schule freigegeben
+- geprüft / passende Netzteile
+
+✗ Privatgerät
+- Zustand oft unbekannt
+- Billig-Netzteil / Kabelschaden möglich
+
+Darum: Private Geräte nur nach Regelung der Schule – im Zweifel **nicht anschließen**.`,
+    imageUrl: "/media/images/handyladen.jpg",
+  },
+
+  {
+    type: "summary",
+    order: 12,
+    title: "Merksatz: Private Elektrogeräte",
+    body: `Nur geprüfte Geräte verwenden.
+Privatgerät + unbekanntes Netzteil = unnötiges Risiko.`,
+    imageUrl: null,
+  },
+],
+
+},
+
+// Kapitel 4
+{
+  slug: "flucht-rettungswege",
+  order: 4,
+  title: "Flucht & Rettungswege",
+  heroImage: null,
+  introVideo: null,
+  slides: [
+  {
+    type: "content",
+    order: 1,
+    title: "4 Beschreibung: Flucht & Rettungswege",
+    body: `Flucht- und Rettungswege sind dafür da, dass alle Personen das Gebäude im Notfall schnell und sicher verlassen können.
+
+Dazu gehören:
+- Fluchtweg-Schilder
+- Notausgänge
+- Stiegenhäuser und Gänge`,
+    imageUrl: "/media/images/fluchtweg_schilder.png",
+  },
+
+  {
+    type: "content",
+    order: 2,
+    title: "Gefahr durch Hindernisse",
+    body: `Hindernisse auf Fluchtwegen sind gefährlich, weil:
+
+- Menschen stolpern oder bleiben hängen
+- Fluchtwege verengen sich (Stau)
+- Rauch macht Sicht und Orientierung schlechter
+
+! Auch kleine Dinge (Taschen, Kartons, Sessel) können im Notfall kritisch sein.`,
+    imageUrl: null,
+  },
+{
+    type: "content",
     order: 4,
-    title: 'Flucht- und Rettungswege',
-    heroImage: '/media/images/fluchtweg_header.jpg',
-    introVideo: '/media/videos/htl_fluchtwege_intro.mp4',
-    slides: [
-      {
-  type: 'content',
-  order: 1,
-  title: 'Fluchtwege freihalten',
-  body: `
-Fluchtwege sind **Lebenswege**.
+    title: "Regeln: Fluchtwege freihalten",
+    body: `Die wichtigsten Regeln:
 
-- Gänge, Türen und Stiegen müssen immer frei bleiben
-- Auch kurz abgestellte Gegenstände sind gefährlich
-- Im Rauch sieht man Hindernisse oft zu spät
+- nichts in Gänge / Stiegenhäuser stellen
+- Türen, Notausgänge und Beschilderung nicht verdecken
+- keine Kabel als Stolperfallen quer über Wege legen
+- im Zweifel: wegräumen oder melden
+`,
+    imageUrl: null,
+  },
+  {
+    type: "content",
+    order: 3,
+    title: "4.1 Fluchtwege freihalten",
+    body: `Schau dir die Beispiele an:`,
+    imageUrl: "/media/images/fluchtweg_vergleich.png",
+  },
 
-👉 Merke: Was heute nur stört, kann im Notfall tödlich sein.
-  `,
-  imageUrl: '/media/images/fluchtVersperren.png',
-},
-
-      {
-  type: 'content',
-  order: 2,
-  title: 'Notausgänge & Beschilderung',
-  body: `
-Im Brandfall zählt Orientierung.
-
-- Notausgänge sind mit **grünen Fluchtweg-Schildern** markiert
-- Diese Schilder sind auch bei Rauch sichtbar
-- Präge dir Wege **vorher** ein, nicht erst im Notfall
-
-🧠 Challenge: Weißt du jetzt, wo dein nächster Notausgang ist?
-  `,
-  imageUrl: '/media/images/fluchtweg.png',
-},
-
-     {
-  type: 'content',
-  order: 3,
-  title: 'Liftverbot im Brandfall',
-  body: `
-🚫 **Warum du niemals den Lift benutzen darfst:**
-
-- Stromausfall kann den Lift stoppen
-- Rauch kann in den Schacht eindringen
-- Du kannst eingeschlossen werden
-
-✅ **Richtig:** Immer Stiegenhäuser benutzen – auch wenn es länger dauert.
-  `,
-  imageUrl: '/media/images/aufzugverbot.png',
+  {
+    type: "summary",
+    order: 5,
+    title: "Merksatz: Rettungswege",
+    body: `Rettungsweg = Lebensweg.
+Alles muss frei bleiben – immer.`,
+    imageUrl: null,
+  },
+],
 },
 {
-  type: 'summary',
-  order: 4,
-  title: 'Kurz & Klar – Das musst du wissen',
-  body: `
-- Fluchtwege immer freihalten
-- Notausgänge & Schilder kennen
-- Lift im Brandfall tabu
-- Zum Sammelplatz gehen
+  slug: "verhalten-bei-veranstaltungen",
+  order: 5,
+  title: "Verhalten bei Schulveranstaltungen",
+  heroImage: null,
+  introVideo: null,
+  slides: [
+  // ===== Kapitel 5 Intro =====
+  {
+    type: "content",
+    order: 1,
+    title: "5 Beschreibung: Schulveranstaltungen",
+    body: `Bei Schulveranstaltungen sind mehr Menschen im Gebäude als sonst – viele kennen die Fluchtwege nicht.
 
-✔️ Wenn du das kannst, bist du vorbereitet.
-  `,
-  imageUrl: '/media/images/fluchtkarte.jpg',
-},
-
-    ],
+Darum gibt es extra Regeln:
+- damit Wege frei bleiben
+- damit es keine Panik gibt
+- damit im Ernstfall alle schnell rauskommen`,
+    imageUrl: null,
   },
 
   {
-    slug: 'schulveranstaltungen',
-    order: 5,
-    title: 'Verhalten bei Schulveranstaltungen',
-    heroImage: '/media/images/schulveranstaltung_header.jpg',
-    introVideo: '/media/videos/htl_schulveranstaltung_intro.mp4',
-    slides: [
-      {
-        type: 'content',
-        order: 1,
-        title: 'Besondere Situation bei Veranstaltungen',
-        body: `Bei Schulveranstaltungen sind viele Gäste im Haus, die Fluchtwege nicht kennen. 
-Darum ist dein Verhalten besonders wichtig.`,
-        imageUrl: '/media/images/veranstaltung_aula.png',
-      },
-      {
-        type: 'content',
-        order: 2,
-        title: 'Vorbereitung & Freihalten der Wege',
-        body: `Stände, Plakate oder Technik dürfen Fluchtwege nicht blockieren. 
-Mindestbreiten in Gängen und bei Türen müssen eingehalten werden.`,
-        imageUrl: '/media/images/stand_fluchtweg.png',
-      },
-      {
-        type: 'content',
-        order: 3,
-        title: 'Evakuierung & Besucher',
-        body: `Im Alarmfall werden Besucher zu Notausgängen und Sammelplatz geleitet. 
-Lehrpersonen und Schüler ab der 3. Klasse unterstützen aktiv.`,
-        imageUrl: '/media/images/evakuierung_besucher.png',
-      },
-      {
-        type: 'summary',
-        order: 4,
-        title: 'Merkliste: Schulveranstaltungen',
-        body: `- Fluchtwege auch bei Veranstaltungen freihalten\n- Besucher ruhig zu Notausgängen und Sammelplatz führen\n- Bei Alarm in der Freistunde selbständig zum Sammelplatz gehen`,
-        imageUrl: '/media/images/checkliste_veranstaltung.png',
-      },
-    ],
+    type: "content",
+    order: 2,
+    title: "Menschenmenge: Warum ist das ein Risiko?",
+    body: `Viele Personen auf engem Raum = höheres Risiko:
+
+- Stau in Gängen & bei Türen
+- Unübersichtlichkeit (Rauch / Lärm)
+- Besucher kennen Notausgänge nicht
+- Stolperfallen (Kabel, Taschen, Deko)
+
+✓ Ziel: Ordnung schaffen, bevor etwas passiert.`,
+    imageUrl: null,
   },
-];
+
+  {
+    type: "content",
+    order: 3,
+    title: "Übersicht: Rollen bei Veranstaltungen",
+    body: `Damit alles sicher läuft, hat jede Gruppe Aufgaben:
+
+Lehrpersonen
+- verantworten Organisation & Evakuierung
+- geben Anweisungen, koordinieren Besucher
+
+Schüler:innen
+- halten Wege frei, melden Hindernisse
+- unterstützen ruhig beim Leiten (wenn eingeteilt)
+
+Besucher:innen
+- folgen Anweisungen
+- bleiben ruhig, gehen geordnet mit`,
+    imageUrl: null,
+  },
+
+  // ===== 5.1 Vorbereitung =====
+  {
+    type: "content",
+    order: 4,
+    title: "5.1 Vorbereitung",
+    body: `Vorbereitung ist der wichtigste Teil: Wenn vorher alles passt, passiert im Ernstfall weniger Chaos.`,
+    imageUrl: "/media/images/brandschutztuer.png",
+  },
+
+  {
+    type: "content",
+    order: 5,
+    title: "Aufgaben vor dem Event",
+    body: `Checkliste vor Beginn:
+
+- Fluchtwege komplett frei (keine Stühle/Kartons/Deko)
+- Türen/Notausgänge nicht zustellen
+- Kabel sichern (nicht quer über Wege)
+- Feuerlöscher/Brandmelder zugänglich
+- Aufbau so planen, dass Gänge breit bleiben`,
+    imageUrl: null,
+  },
+
+  {
+    type: "content",
+    order: 6,
+    title: "Miniquiz: Vorbereitung – richtig oder falsch?",
+    body: `Beantworte die Aussagen mit Richtig/Falsch.`,
+    imageUrl: null,
+  },
+
+  {
+    type: "summary",
+    order: 7,
+    title: "Merksatz: Vorbereitung",
+    body: `Die beste Evakuierung ist die,
+die durch gute Vorbereitung ruhig bleibt.`,
+    imageUrl: null,
+  },
+
+  // ===== 5.2 Evakuierung =====
+  {
+    type: "content",
+    order: 8,
+    title: "5.2 Evakuierung",
+    body: `Wenn Alarm ist, zählt: ruhig bleiben, Anweisungen folgen, geordnet raus.`,
+    imageUrl: "/media/images/alarm_sirene.png",
+  },
+
+  {
+    type: "content",
+    order: 9,
+    title: "Schrittfolge der Evakuierung",
+    body: `So läuft es richtig ab:
+
+1) Alarm wahrnehmen – Ruhe bewahren
+2) Anweisungen der Lehrperson befolgen
+3) Nächsten Fluchtweg nehmen (Schilder)
+4) Kein Drängeln – nicht zurücklaufen
+5) Sammelplatz aufsuchen
+6) Warten auf weitere Infos`,
+    imageUrl: null,
+  },
+
+  {
+    type: "content",
+    order: 10,
+    title: "Übung: Evakuierung – richtige Reihenfolge",
+    body: `Ziehe die Schritte in die richtige Reihenfolge.`,
+    imageUrl: null,
+  },
+
+  {
+    type: "summary",
+    order: 11,
+    title: "Merksatz: Evakuierung",
+    body: `Ruhig bleiben. Fluchtweg folgen.
+Sammelplatz. Nicht zurück.`,
+    imageUrl: null,
+  },
+
+  // ===== 5.3 Personen ohne Ortskenntnisse =====
+  {
+    type: "content",
+    order: 12,
+    title: "5.3 Personen ohne Ortskenntnisse",
+    body: `Besucher:innen kennen die Fluchtwege nicht.
+
+Darum ist deine Verantwortung:
+- ruhig bleiben
+- kurz und klar helfen
+- nicht diskutieren, sondern führen`,
+    imageUrl: "/media/images/besucher_hilfe.png",
+  },
+
+  {
+    type: "content",
+    order: 13,
+    title: "Fragen im Ernstfall: Was tun?",
+    body: `Beispiele, die du dir merken kannst:
+
+- „Wo geht’s raus?“ → zur nächsten beschilderten Tür führen
+- „Soll ich meine Jacke holen?“ → Nein, sofort mitkommen
+- „Ich finde meine Gruppe nicht“ → mitnehmen, später am Sammelplatz klären
+- „Jemand braucht Hilfe“ → Lehrperson/Portier informieren, nicht alleine riskieren`,
+    imageUrl: null,
+  },
+
+  {
+    type: "summary",
+    order: 14,
+    title: "Abschluss: Du bist Teil der Sicherheit",
+    body: `Wenn du ruhig bleibst und richtig handelst,
+hilfst du dir – und allen anderen.
+
+✓ Wege frei
+✓ Anweisungen folgen
+✓ Besucher mitnehmen`,
+    imageUrl: null,
+  },
+],
+
+}
+]

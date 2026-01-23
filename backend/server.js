@@ -24,7 +24,6 @@ dotenv.config();
 
 const app = express();
 
-// Falls du später hinter Proxy/Render/Heroku bist:
 app.set('trust proxy', 1);
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';

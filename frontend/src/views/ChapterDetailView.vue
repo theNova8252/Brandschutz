@@ -37,6 +37,8 @@
       @swiper="onSwiperInit"
       :allowSlideNext="canGoNext"
       :allowSlidePrev="true"
+       :noSwiping="true"
+  noSwipingClass="swiper-no-swiping"
     >
       <SwiperSlide v-for="(slide, index) in chapterStore.currentChapter.slides" :key="slide.id">
         <div class="slide-card">
@@ -213,6 +215,74 @@
 </div>
 
 
+<!-- DRAG & DROP -->
+<div v-else-if="interactiveFor(slide).type === 'dragdrop'" class="interactive-box swiper-no-swiping">
+  <div class="quiz-question">{{ interactiveFor(slide).prompt }}</div>
+
+  <!-- Items zum Ziehen -->
+  <div class="drag-items">
+    <div
+      v-for="it in getDragItems(slide.id).unassigned"
+      :key="it.id"
+      class="drag-item"
+      draggable="true"
+      @dragstart="onDragStart(slide.id, it.id, $event)"
+      @pointerdown.stop
+  @mousedown.stop
+  @touchstart.stop.prevent
+    >
+      <img v-if="it.image" :src="it.image" :alt="it.label" />
+      <div class="drag-label">{{ it.label }}</div>
+    </div>
+  </div>
+
+<!-- Drop-Zonen (dynamisch) -->
+<div class="dropzones">
+  <div
+    v-for="b in interactiveFor(slide).buckets"
+    :key="b.id"
+    class="dropzone"
+    @dragover.prevent
+    @drop="onDrop(slide.id, b.id)"
+  >
+    <div class="dropzone-title">{{ b.title }}</div>
+
+    <div class="dropzone-items">
+      <div
+        v-for="it in getDragItems(slide.id).buckets[b.id]"
+        :key="it.id"
+        class="drag-item small"
+        draggable="true"
+        @dragstart="onDragStart(slide.id, it.id, $event)"
+      >
+        <img v-if="it.image" :src="it.image" :alt="it.label" />
+        <div class="drag-label">{{ it.label }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <div class="drag-actions">
+    <button class="interactive-btn" @click="evaluateDragDrop(slide.id)">
+      Prüfen
+    </button>
+    <button class="interactive-btn ghost" @click="resetDragDrop(slide.id)">
+      Zurücksetzen
+    </button>
+  </div>
+
+  <div
+    v-if="interactiveState[slide.id]?.feedback"
+    class="interactive-feedback"
+    :class="interactiveState[slide.id]?.level"
+  >
+    <strong>{{ interactiveState[slide.id]?.headline }}</strong>
+    <div>{{ interactiveState[slide.id]?.feedback }}</div>
+  </div>
+</div>
+
+
             <!-- QUIZ -->
             <div v-else-if="interactiveFor(slide).type === 'quiz'" class="interactive-box">
               <div v-for="q in interactiveFor(slide).questions" :key="q.id" class="quiz-card">
@@ -239,7 +309,7 @@
               </div>
             </div>
 
-            <img v-if="slide.imageUrl" :src="slide.imageUrl" alt="Illustration" class="slide-image" />
+            <img v-if="slide.imageUrl" :src="slide.imageUrl" alt="Illustration" class="slide-image" :class="{ bigImage: slide.title === '4.1 Fluchtwege freihalten' }"/>
 
             <div v-if="interactiveState[slide.id]?.done" class="progress-hint completed" style="margin-top: 12px">
               <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -282,7 +352,8 @@
     </div>
 
     <div v-if="slide.imageUrl" class="content-media">
-      <img :src="slide.imageUrl" alt="Illustration" class="slide-image side" />
+      <img :src="slide.imageUrl" alt="Illustration" class="slide-image side"   :class="{ side: isSideImageSlide(slide, index),
+    bigCompare: slide.title === '4.1 Fluchtwege freihalten' }"/>
     </div>
   </div>
 
@@ -561,6 +632,102 @@ const INTERACTIVES = {
     ],
   },
 
+    "Übung: Wo darf ich abstellen?": {
+    type: "multiselect",
+    prompt: "Wähle 4 richtige Abstellorte aus:",
+    options: [
+      { id: "aussen_ständer", label: "Draußen beim Fahrradständer", correct: true },
+      { id: "markiert", label: "Markierter Außenbereich", correct: true },
+      { id: "ueberdacht", label: "Draußen (überdacht) – Fluchtwege frei", correct: true },
+      { id: "weit_weg", label: "Draußen – nicht vor Eingängen", correct: true },
+
+      { id: "stiegenhaus", label: "Im Stiegenhaus", correct: false },
+      { id: "gang", label: "Im Gang neben Klassenzimmern", correct: false },
+    ],
+  },
+
+  "Übung: Laden in der Schule – darf / darf nicht": {
+    type: "dragdrop",
+    prompt: "Ziehe jeden Gegenstand in die richtige Box:",
+    buckets: [
+      { id: "darf", title: "Darf (in der Schule laden)" },
+      { id: "darfNicht", title: "Darf NICHT (in der Schule laden)" },
+    ],
+    items: [
+      // DARF
+      { id: "schul_laptop", label: "Schul-Laptop", image: "/media/images/schul_laptop.png", correctBucket: "darf" },
+      { id: "schul_tablet", label: "Schul-Tablet", image: "/media/images/schul_tablet.png", correctBucket: "darf" },
+
+      // DARF NICHT
+      { id: "powerbank", label: "Powerbank (privat)", image: "/media/images/powerbank.png", correctBucket: "darfNicht" },
+      { id: "e_scooter_akku", label: "E-Scooter Akku", image: "/media/images/e_scooter_akku.png", correctBucket: "darfNicht" },
+      { id: "werkzeug_akku", label: "Werkzeug-Akku", image: "/media/images/werkzeug_akku.png", correctBucket: "darfNicht" },
+      { id: "vape", label: "Vape / E-Zigarette", image: "/media/images/vape.png", correctBucket: "darfNicht" },
+    ],
+  },
+
+
+  "Miniquiz: Vorbereitung – richtig oder falsch?": {
+  type: "quiz",
+  questions: [
+    {
+      id: "q1",
+      question: "Kartons kurz im Gang lagern ist ok, solange es „nur 10 Minuten“ sind.",
+      options: [
+        { id: "t", label: "Richtig", correct: false, level: "danger", headline: "Falsch ❌", feedback: "Fluchtwege müssen immer frei sein – auch kurzzeitig." },
+        { id: "f", label: "Falsch", correct: true,  level: "good",   headline: "Richtig ✅", feedback: "Genau: nichts in Gänge/Stiegenhäuser stellen." },
+      ],
+    },
+    {
+      id: "q2",
+      question: "Kabel quer über den Weg sind gefährlich (Stolperfallen).",
+      options: [
+        { id: "t", label: "Richtig", correct: true,  level: "good", headline: "Richtig ✅", feedback: "Kabel sichern oder umleiten – Wege müssen sicher bleiben." },
+        { id: "f", label: "Falsch",  correct: false, level: "bad",  headline: "Falsch ❌", feedback: "Das ist eine typische Stolperfalle." },
+      ],
+    },
+    {
+      id: "q3",
+      question: "Notausgänge darf man mit Deko zustellen, wenn es schöner aussieht.",
+      options: [
+        { id: "t", label: "Richtig", correct: false, level: "danger", headline: "Gefährlich ❌", feedback: "Notausgänge dürfen nie blockiert oder verdeckt sein." },
+        { id: "f", label: "Falsch",  correct: true,  level: "good",   headline: "Richtig ✅", feedback: "Sicherheit geht vor Deko." },
+      ],
+    },
+    {
+      id: "q4",
+      question: "Feuerlöscher müssen zugänglich bleiben (nicht zustellen).",
+      options: [
+        { id: "t", label: "Richtig", correct: true,  level: "good", headline: "Richtig ✅", feedback: "Im Ernstfall muss man sofort hinkommen." },
+        { id: "f", label: "Falsch",  correct: false, level: "bad",  headline: "Falsch ❌", feedback: "Zustellen kostet Zeit und ist gefährlich." },
+      ],
+    },
+  ],
+},
+
+
+"Übung: Evakuierung – richtige Reihenfolge": {
+  type: "dragdrop",
+  prompt: "Ordne die Schritte in die richtige Reihenfolge (1 → 6):",
+  buckets: [
+    { id: "s1", title: "1" },
+    { id: "s2", title: "2" },
+    { id: "s3", title: "3" },
+    { id: "s4", title: "4" },
+    { id: "s5", title: "5" },
+    { id: "s6", title: "6" },
+  ],
+  items: [
+    { id: "a", label: "Ruhe bewahren – Alarm ernst nehmen", image: null, correctBucket: "s1" },
+    { id: "b", label: "Anweisungen der Lehrperson befolgen", image: null, correctBucket: "s2" },
+    { id: "c", label: "Fluchtweg-Schildern folgen", image: null, correctBucket: "s3" },
+    { id: "d", label: "Nicht drängeln – nicht zurücklaufen", image: null, correctBucket: "s4" },
+    { id: "e", label: "Zum Sammelplatz gehen", image: null, correctBucket: "s5" },
+    { id: "f", label: "Warten auf weitere Infos", image: null, correctBucket: "s6" },
+  ],
+},
+
+
 };
 
 // Kapitel 1: Firefly Texte (über Slide-Titel)
@@ -626,6 +793,9 @@ let swiperInstance = null;
 // nur erste Slide seitlich
 const isSideImageSlide = (slide, index) => {
   const chapterOrder = chapterStore.currentChapter?.order;
+  // Kapitel 4: Vergleichsbild soll NICHT side-layout sein
+if (slide?.title === "4.1 Fluchtwege freihalten") return false;
+
 
   // ✅ Kapitel 2: Nur diese Slides sollen Bild rechts (side layout) haben
   if (chapterOrder === 2) {
@@ -803,7 +973,8 @@ const ensureSlideState = (slideId) => {
       level: null,
       headline: null,
       quiz: {},
-      selected: [], // ✅ wichtig für multiselect
+      selected: [],
+      dragdrop: null,
     };
   }
   return interactiveState.value[slideId];
@@ -898,6 +1069,166 @@ const toggleMulti = (slideId, opt) => {
 
   visitedSlides.value[slideId] = true;
   nextTick(() => updateSwiperNavigation());
+};
+
+
+const dragPayload = ref({ slideId: null, itemId: null });
+
+const getDragCfg = (slideId) => {
+  const slide = chapterStore.currentChapter?.slides?.find(s => s.id === slideId);
+  if (!slide) return null;
+  return INTERACTIVES[slide.title] || null;
+};
+
+const initDragDropStateIfNeeded = (slideId) => {
+  const st = ensureSlideState(slideId);
+  const cfg = getDragCfg(slideId);
+
+  if (!cfg || cfg.type !== "dragdrop") return;
+
+  if (!st.dragdrop) {
+    const bucketsObj = Object.fromEntries((cfg.buckets || []).map(b => [b.id, []]));
+
+    st.dragdrop = {
+      unassigned: cfg.items.map(i => i.id),
+      buckets: bucketsObj,
+    };
+  }
+};
+
+
+const getDragItems = (slideId) => {
+  initDragDropStateIfNeeded(slideId);
+
+  const cfg = getDragCfg(slideId);
+  const st = interactiveState.value[slideId];
+
+  const byId = Object.fromEntries(cfg.items.map(i => [i.id, i]));
+  const mapIds = (ids) => ids.map(id => byId[id]).filter(Boolean);
+
+  const buckets = {};
+  for (const b of (cfg.buckets || [])) {
+    buckets[b.id] = mapIds(st.dragdrop.buckets[b.id] || []);
+  }
+
+  return {
+    unassigned: mapIds(st.dragdrop.unassigned),
+    buckets,
+  };
+};
+
+const removeFromAllLists = (dd, itemId) => {
+  dd.unassigned = dd.unassigned.filter(id => id !== itemId);
+
+  for (const key of Object.keys(dd.buckets || {})) {
+    dd.buckets[key] = dd.buckets[key].filter(id => id !== itemId);
+  }
+};
+
+const setSwiperDragEnabled = (enabled) => {
+  // du hast swiperInstance als Variable (kein ref)
+  if (!swiperInstance) return;
+  swiperInstance.allowTouchMove = enabled;
+};
+
+
+
+const onDragStart = (slideId, itemId, e) => {
+  dragPayload.value = { slideId, itemId };
+
+    e.dataTransfer.setData("text/plain", itemId);
+  e.dataTransfer.effectAllowed = "move";
+
+    setSwiperDragEnabled(false);
+};
+
+const onDrop = (slideId, bucketId) => {
+  initDragDropStateIfNeeded(slideId);
+
+  const st = ensureSlideState(slideId);
+  const { itemId } = dragPayload.value;
+  if (!itemId) return;
+
+  removeFromAllLists(st.dragdrop, itemId);
+
+  if (st.dragdrop.buckets?.[bucketId]) {
+    st.dragdrop.buckets[bucketId].push(itemId);
+  } else {
+    st.dragdrop.unassigned.push(itemId);
+  }
+
+  st.done = false;
+  st.feedback = null;
+  st.level = null;
+  st.headline = null;
+
+  setSwiperDragEnabled(true);
+};
+
+const evaluateDragDrop = (slideId) => {
+  initDragDropStateIfNeeded(slideId);
+
+  const st = ensureSlideState(slideId);
+  const cfg = getDragCfg(slideId);
+  if (!cfg) return;
+
+  // muss alles zugeordnet sein
+  if (st.dragdrop.unassigned.length > 0) {
+    st.done = false;
+    st.level = "bad";
+    st.headline = "Noch nicht fertig";
+    st.feedback = "Ordne zuerst alle Gegenstände zu.";
+    return;
+  }
+
+ const placed = Object.fromEntries(
+  Object.entries(st.dragdrop.buckets).map(([k, ids]) => [k, new Set(ids)])
+);
+
+
+  let wrong = 0;
+
+  for (const it of cfg.items) {
+  const correct = !!placed[it.correctBucket]?.has(it.id);
+  if(!correct) wrong++;
+
+  }
+
+  if (wrong > 0) {
+    st.done = false;
+    st.level = "danger";
+    st.headline = "Nicht ganz ❌";
+    st.feedback = `Es sind noch ${wrong} Zuordnungen falsch. Verschiebe sie und prüfe erneut.`;
+    return;
+  }
+
+  st.done = true;
+  st.level = "good";
+  st.headline = "Perfekt ✅";
+  st.feedback = "Alles richtig – du kannst weiter swipen.";
+
+  visitedSlides.value[slideId] = true;
+  nextTick(() => updateSwiperNavigation());
+};
+
+const resetDragDrop = (slideId) => {
+  const st = ensureSlideState(slideId);
+  const cfg = getDragCfg(slideId);
+  if (!cfg) return;
+
+st.dragdrop = {
+  unassigned: cfg.items.map(i => i.id),
+  buckets: Object.fromEntries((cfg.buckets || []).map(b => [b.id, []])),
+};
+
+
+  st.done = false;
+  st.feedback = null;
+  st.level = null;
+  st.headline = null;
+
+  setSwiperDragEnabled(true);
+
 };
 
 
@@ -1106,6 +1437,17 @@ const canGoNext = computed(() => {
 
 
 const finishChapter = async () => {
+  const chapter = chapterStore.currentChapter;
+if (chapter?.slides?.length) {
+  const currentSlide = chapter.slides[activeIndex.value];
+  if (currentSlide) {
+    // wenn nicht Video: als gelesen markieren
+    if (currentSlide.type !== "video") {
+      visitedSlides.value[currentSlide.id] = true;
+    }
+  }
+}
+
   if (!allSlidesCompleted.value) return;
 
   const chapterId = chapterStore.currentChapter.id;
@@ -1809,6 +2151,109 @@ const saveProgress = async () => {
   border-color: #f97316;
   background: rgba(249, 115, 22, 0.15);
 }
+
+
+
+
+
+.drag-items {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 12px 0 18px;
+}
+
+.drag-item {
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+  user-select: none;
+}
+
+.drag-item.small {
+  padding: 8px;
+}
+
+.drag-item img {
+  width: 90px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.drag-label {
+  font-size: 0.95rem;
+  text-align: center;
+  opacity: 0.95;
+}
+
+.dropzones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+
+.dropzone {
+  min-height: 170px;
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dropzone-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.dropzone-items {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.drag-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.interactive-btn.ghost {
+  opacity: 0.85;
+}
+
+.bigImage {
+  display: block;
+  margin: 24px auto 0 auto;
+  width: 100%;
+  max-width: 800px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+
+/* NUR für das Vergleichsbild (Kapitel 4.1) */
+.bigCompare {
+  display: block;
+  width: min(820px, 100%);
+  max-width: 820px;
+  margin: 22px auto 0 auto;
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+/* wenn bigCompare, dann media-container zentrieren und volle Breite geben */
+.content-media:has(.bigCompare) {
+  justify-content: center;
+}
+
 
 
 </style>

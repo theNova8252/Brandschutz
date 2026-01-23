@@ -48,7 +48,7 @@ const error = route.query.error;
 const googleLogin = () => {
   // ✅ Hosted Domain Hint: versucht Google-Login auf diese Domain zu beschränken
   // (Design bleibt gleich; nur Redirect-URL wird ergänzt)
-  window.location.href = "/api/auth/google?hd=htlwienwest.at";
+  window.location.href = "/api/auth/google";
 };
 </script>
 

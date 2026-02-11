@@ -109,7 +109,7 @@ const downloadCertificate = () => {
 onMounted(async () => {
   window.addEventListener('click', handleClickOutside);
 
-  await chapterStore.fetchChapters();
+  await chapterStore.fetchChapters(); 
   await fetchProgress();
   await fetchMe();
 });
@@ -163,7 +163,7 @@ const chaptersWithProgress = computed(() => {
     <div class="page-logo">
       <img src="../assets/images/logoBrand.png" alt="HTL FireCourse Logo" class="logo" />
     </div>
-    <h1 class="page-title">Kapitelübersicht</h1>
+    <h1 class="page-title">Schulung Brandschutzverordnung</h1>
 
     <p v-if="chapterStore.loading || loadingProgress" class="info">
       Lade Kapitel und Fortschritt…

@@ -15,7 +15,10 @@ onMounted(() => {
 <template>
   <!-- Nav nur wenn eingeloggt -->
   <nav v-if="userStore.isLoggedIn && route.path !== '/login'" class="nav">
-    <router-link to="/chapters">Kapitel</router-link>
+    <img src="./assets/images/htlWW_Logo.png" alt="HTL Wien West Logo" class="logo">
+    <router-link to="/chapters">
+    <span>HTL Wien West</span>
+    </router-link>
 
     <router-link v-if="userStore.isAdmin" to="/users">
       Benutzerverwaltung
@@ -52,5 +55,10 @@ onMounted(() => {
 .nav a.router-link-active {
   border-color: rgba(96, 165, 250, 0.55);
   background: rgba(96, 165, 250, 0.12);
+}
+.logo{
+  height: 28px;
+  width: auto;
+  object-fit: contain;
 }
 </style>

@@ -33,7 +33,7 @@
       </p>
 
       <div class="footer-text">
-        HTL Wien West • Sicher lernen, Wissen schützen
+        HTL Wien West • Technik · Umwelt · Digitalisierung
       </div>
     </div>
   </div>

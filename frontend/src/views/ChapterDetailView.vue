@@ -19,370 +19,269 @@
       <div class="firefly-speech-bubble">
         {{ getCurrentFireflyMessage() }}
       </div>
-      <img
-        :src="activeIndex === 0 ? fireflyWelcome : fireflyNormal"
-        alt="Firefly Begleiter"
-        class="firefly-image"
-        :class="{ 'firefly-bounce': true }"
-      />
+      <img :src="activeIndex === 0 ? fireflyWelcome : fireflyNormal" alt="Firefly Begleiter" class="firefly-image"
+        :class="{ 'firefly-bounce': true }" />
     </div>
 
-    <Swiper
-      class="slides-swiper"
-      :space-between="24"
-      :slides-per-view="1"
-      :centered-slides="true"
-      grab-cursor
-      @slideChange="onSlideChange"
-      @swiper="onSwiperInit"
-      :allowSlideNext="canGoNext"
-      :allowSlidePrev="true"
-       :noSwiping="true"
-  noSwipingClass="swiper-no-swiping"
-    >
-      <SwiperSlide v-for="(slide, index) in chapterStore.currentChapter.slides" :key="slide.id">
-        <div class="slide-card">
-          <p class="slide-type">{{ labelForType(slide.type) }}</p>
-          <h2 class="slide-title">{{ slide.title }}</h2>
+    <!-- Navigation Buttons - Fixed on Sides -->
+    <button class="swiper-nav-button swiper-nav-prev" @click="goToPrevSlide"
+      :disabled="activeIndex === 0 || !canNavigate" :class="{ disabled: activeIndex === 0 || !canNavigate }">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
 
-          <!-- Video-Slide -->
-          <div v-if="slide.type === 'video'">
-            <div class="video-wrapper">
-              <!-- Lokale Videodatei: Eigene Custom Controls ohne Seekbar -->
-              <div v-if="isFileVideo(slide.videoUrl)" class="custom-video-container">
-                <video
-                  ref="videoPlayer"
-                  :src="slide.videoUrl"
-                  @timeupdate="onVideoTimeUpdate($event, slide.id)"
-                  @seeking="onVideoSeeking($event, slide.id)"
-                  @ended="onVideoEnded(slide.id)"
-                  @loadedmetadata="onVideoLoaded($event, slide.id)"
-                  @click="togglePlay(slide.id)"
-                ></video>
+    <button class="swiper-nav-button swiper-nav-next" @click="goToNextSlide" :disabled="!canGoNext || !canNavigate"
+      :class="{ disabled: !canGoNext || !canNavigate }">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
 
-                <div class="custom-controls">
-                  <button class="play-btn" @click="togglePlay(slide.id)">
-                    <svg v-if="!isPlaying[slide.id]" width="24" height="24" viewBox="0 0 24 24" fill="white">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                    <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="white">
-                      <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                    </svg>
-                  </button>
+    <!-- Swiper Container -->
+    <div class="swiper-container">
+      <Swiper class="slides-swiper" :space-between="24" :slides-per-view="1" :centered-slides="true" grab-cursor
+        @slideChange="onSlideChange" @swiper="onSwiperInit" :allowSlideNext="canGoNext" :allowSlidePrev="true"
+        :noSwiping="true" noSwipingClass="swiper-no-swiping">
+        <SwiperSlide v-for="(slide, index) in chapterStore.currentChapter.slides" :key="slide.id">
+          <div class="slide-card">
+            <p class="slide-type">{{ labelForType(slide.type) }}</p>
+            <h2 class="slide-title">{{ slide.title }}</h2>
 
-                  <div class="time-display">
-                    {{ formatTime(currentTime[slide.id] || 0) }} / {{ formatTime(videoDurations[slide.id] || 0) }}
+            <!-- Video-Slide -->
+            <div v-if="slide.type === 'video'">
+              <div class="video-wrapper">
+                <!-- Lokale Videodatei: Eigene Custom Controls ohne Seekbar -->
+                <div v-if="isFileVideo(slide.videoUrl)" class="custom-video-container">
+                  <video ref="videoPlayer" :src="slide.videoUrl" @timeupdate="onVideoTimeUpdate($event, slide.id)"
+                    @seeking="onVideoSeeking($event, slide.id)" @ended="onVideoEnded(slide.id)"
+                    @loadedmetadata="onVideoLoaded($event, slide.id)" @click="togglePlay(slide.id)"></video>
+
+                  <div class="custom-controls">
+                    <button class="play-btn" @click="togglePlay(slide.id)">
+                      <svg v-if="!isPlaying[slide.id]" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                      <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="white">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                      </svg>
+                    </button>
+
+                    <div class="time-display">
+                      {{ formatTime(currentTime[slide.id] || 0) }} / {{ formatTime(videoDurations[slide.id] || 0) }}
+                    </div>
+
+                    <button class="volume-btn" @click="toggleMute(slide.id)">
+                      <svg v-if="!isMuted[slide.id]" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                        <path
+                          d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                      </svg>
+                      <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="white">
+                        <path
+                          d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                      </svg>
+                    </button>
                   </div>
-
-                  <button class="volume-btn" @click="toggleMute(slide.id)">
-                    <svg v-if="!isMuted[slide.id]" width="24" height="24" viewBox="0 0 24 24" fill="white">
-                      <path
-                        d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"
-                      />
-                    </svg>
-                    <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="white">
-                      <path
-                        d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"
-                      />
-                    </svg>
-                  </button>
                 </div>
+
+                <!-- YouTube -->
+                <iframe v-else :src="youtubeEmbed(slide.videoUrl)" frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen @load="onYouTubeLoad(slide.id)"></iframe>
               </div>
 
-              <!-- YouTube -->
-              <iframe
-                v-else
-                :src="youtubeEmbed(slide.videoUrl)"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen
-                @load="onYouTubeLoad(slide.id)"
-              ></iframe>
-            </div>
+              <!-- Video Text (modern) -->
+              <div class="rich-body" v-if="slide.body" v-html="parseBody(slide.body)"></div>
 
-            <!-- Video Text (modern) -->
-            <div class="rich-body" v-if="slide.body">
-              <template v-for="(block, bIdx) in parseBody(slide.body)" :key="bIdx">
-                <p v-if="block.type === 'p'" class="rich-p">{{ block.text }}</p>
-
-                <ul v-else-if="block.type === 'ul'" class="rich-ul">
-                  <li v-for="(item, iIdx) in block.items" :key="iIdx">{{ item }}</li>
-                </ul>
-
-                <div v-else-if="block.type === 'warn'" class="rich-warn">
-                  <strong>⚠️ Achtung:</strong> {{ block.text }}
-                </div>
-
-                <div v-else-if="block.type === 'check'" class="rich-check">
-                  <strong>✅ Merke:</strong> {{ block.text }}
-                </div>
-              </template>
-            </div>
-
-            <!-- Video-Fortschrittsanzeige -->
-            <div v-if="!videoCompleted[slide.id]" class="progress-hint warning">
-              <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M8 1.5C4.41 1.5 1.5 4.41 1.5 8s2.91 6.5 6.5 6.5 6.5-2.91 6.5-6.5-2.91-6.5-6.5-6.5zm0 11.75c-2.9 0-5.25-2.35-5.25-5.25S5.1 2.75 8 2.75s5.25 2.35 5.25 5.25-2.35 5.25-5.25 5.25z"
-                  fill="currentColor"
-                />
-                <path d="M8 4.5v4l3 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-              Du musst das Video bis zum Ende ansehen, bevor du weiterkommst!
-            </div>
-
-            <div v-else class="progress-hint completed">
-              <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M13.5 4L6 11.5L2.5 8"
-                  stroke="#16a34a"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              Video vollständig angesehen
-            </div>
-          </div>
-
-          <!-- Interaktive Slides (Kapitel 1) -->
-          <div v-else-if="interactiveFor(slide)" class="slide-content">
-            <div class="rich-body" v-if="slide.body">
-              <template v-for="(block, bIdx) in parseBody(slide.body)" :key="bIdx">
-                <p v-if="block.type === 'p'" class="rich-p">{{ block.text }}</p>
-
-                <ul v-else-if="block.type === 'ul'" class="rich-ul">
-                  <li v-for="(item, iIdx) in block.items" :key="iIdx">{{ item }}</li>
-                </ul>
-
-                <div v-else-if="block.type === 'warn'" class="rich-warn">
-                  <strong>⚠️ Achtung:</strong> {{ block.text }}
-                </div>
-
-                <div v-else-if="block.type === 'check'" class="rich-check">
-                  <strong>✅ Merke:</strong> {{ block.text }}
-                </div>
-              </template>
-            </div>
-
-            <!-- DECISION -->
-            <div v-if="interactiveFor(slide).type === 'decision'" class="interactive-box">
-              <div class="interactive-grid">
-                <button
-                  v-for="opt in interactiveFor(slide).options"
-                  :key="opt.id"
-                  class="interactive-btn"
-                  @click="pickDecision(slide.id, opt)"
-                >
-                  {{ opt.label }}
-                </button>
+              <!-- Video-Fortschrittsanzeige -->
+              <div v-if="!videoCompleted[slide.id]" class="progress-hint warning">
+                <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M8 1.5C4.41 1.5 1.5 4.41 1.5 8s2.91 6.5 6.5 6.5 6.5-2.91 6.5-6.5-2.91-6.5-6.5-6.5zm0 11.75c-2.9 0-5.25-2.35-5.25-5.25S5.1 2.75 8 2.75s5.25 2.35 5.25 5.25-2.35 5.25-5.25 5.25z"
+                    fill="currentColor" />
+                  <path d="M8 4.5v4l3 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+                Du musst das Video bis zum Ende ansehen, bevor du weiterkommst!
               </div>
 
-              <div
-                v-if="interactiveState[slide.id]?.feedback"
-                class="interactive-feedback"
-                :class="interactiveState[slide.id]?.level"
-              >
-                <strong>{{ interactiveState[slide.id]?.headline }}</strong>
-                <div>{{ interactiveState[slide.id]?.feedback }}</div>
+              <div v-else class="progress-hint completed">
+                <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M13.5 4L6 11.5L2.5 8" stroke="#16a34a" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+                Video vollständig angesehen
               </div>
             </div>
 
-<!-- MULTISELECT -->
-<div v-else-if="interactiveFor(slide).type === 'multiselect'" class="interactive-box">
-  <div class="quiz-question">{{ interactiveFor(slide).prompt }}</div>
+            <!-- Interaktive Slides (Kapitel 1) -->
+            <div v-else-if="interactiveFor(slide)" class="slide-content">
+              <div class="rich-body" v-if="slide.body" v-html="parseBody(slide.body)"></div>
 
-  <div class="interactive-grid">
-    <button
-      v-for="opt in interactiveFor(slide).options"
-      :key="opt.id"
-      class="interactive-btn"
-      :class="{ active: interactiveState[slide.id]?.selected?.includes(opt.id) }"
-      @click="toggleMulti(slide.id, opt)"
-    >
-      {{ opt.label }}
-    </button>
-  </div>
-
-  <div
-    v-if="interactiveState[slide.id]?.feedback"
-    class="interactive-feedback"
-    :class="interactiveState[slide.id]?.level"
-  >
-    <strong>{{ interactiveState[slide.id]?.headline }}</strong>
-    <div>{{ interactiveState[slide.id]?.feedback }}</div>
-  </div>
-</div>
-
-
-<!-- DRAG & DROP -->
-<div v-else-if="interactiveFor(slide).type === 'dragdrop'" class="interactive-box swiper-no-swiping">
-  <div class="quiz-question">{{ interactiveFor(slide).prompt }}</div>
-
-  <!-- Items zum Ziehen -->
-  <div class="drag-items">
-    <div
-      v-for="it in getDragItems(slide.id).unassigned"
-      :key="it.id"
-      class="drag-item"
-      draggable="true"
-      @dragstart="onDragStart(slide.id, it.id, $event)"
-      @pointerdown.stop
-  @mousedown.stop
-  @touchstart.stop.prevent
-    >
-      <img v-if="it.image" :src="it.image" :alt="it.label" />
-      <div class="drag-label">{{ it.label }}</div>
-    </div>
-  </div>
-
-<!-- Drop-Zonen (dynamisch) -->
-<div class="dropzones">
-  <div
-    v-for="b in interactiveFor(slide).buckets"
-    :key="b.id"
-    class="dropzone"
-    @dragover.prevent
-    @drop="onDrop(slide.id, b.id)"
-  >
-    <div class="dropzone-title">{{ b.title }}</div>
-
-    <div class="dropzone-items">
-      <div
-        v-for="it in getDragItems(slide.id).buckets[b.id]"
-        :key="it.id"
-        class="drag-item small"
-        draggable="true"
-        @dragstart="onDragStart(slide.id, it.id, $event)"
-      >
-        <img v-if="it.image" :src="it.image" :alt="it.label" />
-        <div class="drag-label">{{ it.label }}</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-  <div class="drag-actions">
-    <button class="interactive-btn" @click="evaluateDragDrop(slide.id)">
-      Prüfen
-    </button>
-    <button class="interactive-btn ghost" @click="resetDragDrop(slide.id)">
-      Zurücksetzen
-    </button>
-  </div>
-
-  <div
-    v-if="interactiveState[slide.id]?.feedback"
-    class="interactive-feedback"
-    :class="interactiveState[slide.id]?.level"
-  >
-    <strong>{{ interactiveState[slide.id]?.headline }}</strong>
-    <div>{{ interactiveState[slide.id]?.feedback }}</div>
-  </div>
-</div>
-
-
-            <!-- QUIZ -->
-            <div v-else-if="interactiveFor(slide).type === 'quiz'" class="interactive-box">
-              <div v-for="q in interactiveFor(slide).questions" :key="q.id" class="quiz-card">
-                <div class="quiz-question">{{ q.question }}</div>
+              <!-- DECISION -->
+              <div v-if="interactiveFor(slide).type === 'decision'" class="interactive-box">
                 <div class="interactive-grid">
-                  <button
-                    v-for="opt in q.options"
-                    :key="opt.id"
-                    class="interactive-btn"
-                    @click="pickQuiz(slide.id, q.id, opt)"
-                  >
+                  <button v-for="opt in interactiveFor(slide).options" :key="opt.id" class="interactive-btn"
+                    @click="pickDecision(slide.id, opt)">
                     {{ opt.label }}
                   </button>
                 </div>
 
-                <div
-                  v-if="interactiveState[slide.id]?.quiz?.[q.id]?.feedback"
-                  class="interactive-feedback"
-                  :class="interactiveState[slide.id]?.quiz?.[q.id]?.level"
-                >
-                  <strong>{{ interactiveState[slide.id]?.quiz?.[q.id]?.headline }}</strong>
-                  <div>{{ interactiveState[slide.id]?.quiz?.[q.id]?.feedback }}</div>
+                <div v-if="interactiveState[slide.id]?.feedback" class="interactive-feedback"
+                  :class="interactiveState[slide.id]?.level">
+                  <strong>{{ interactiveState[slide.id]?.headline }}</strong>
+                  <div>{{ interactiveState[slide.id]?.feedback }}</div>
                 </div>
+              </div>
+
+              <!-- MULTISELECT -->
+              <div v-else-if="interactiveFor(slide).type === 'multiselect'" class="interactive-box">
+                <div class="quiz-question">{{ interactiveFor(slide).prompt }}</div>
+
+                <div class="interactive-grid">
+                  <button v-for="opt in interactiveFor(slide).options" :key="opt.id" class="interactive-btn"
+                    :class="{ active: interactiveState[slide.id]?.selected?.includes(opt.id) }"
+                    @click="toggleMulti(slide.id, opt)">
+                    {{ opt.label }}
+                  </button>
+                </div>
+
+                <div v-if="interactiveState[slide.id]?.feedback" class="interactive-feedback"
+                  :class="interactiveState[slide.id]?.level">
+                  <strong>{{ interactiveState[slide.id]?.headline }}</strong>
+                  <div>{{ interactiveState[slide.id]?.feedback }}</div>
+                </div>
+              </div>
+
+
+              <!-- DRAG & DROP -->
+              <div v-else-if="interactiveFor(slide).type === 'dragdrop'" class="interactive-box swiper-no-swiping">
+                <div class="quiz-question">{{ interactiveFor(slide).prompt }}</div>
+
+                <!-- Items zum Ziehen -->
+                <div class="drag-items">
+                  <div v-for="it in getDragItems(slide.id).unassigned" :key="it.id" class="drag-item" draggable="true"
+                    @dragstart="onDragStart(slide.id, it.id, $event)" @pointerdown.stop @mousedown.stop
+                    @touchstart.stop.prevent>
+                    <img v-if="it.image" :src="it.image" :alt="it.label" />
+                    <div class="drag-label">{{ it.label }}</div>
+                  </div>
+                </div>
+
+                <!-- Drop-Zonen (dynamisch) -->
+                <div class="dropzones">
+                  <div v-for="b in interactiveFor(slide).buckets" :key="b.id" class="dropzone" @dragover.prevent
+                    @drop="onDrop(slide.id, b.id)">
+                    <div class="dropzone-title">{{ b.title }}</div>
+
+                    <div class="dropzone-items">
+                      <div v-for="it in getDragItems(slide.id).buckets[b.id]" :key="it.id" class="drag-item small"
+                        draggable="true" @dragstart="onDragStart(slide.id, it.id, $event)">
+                        <img v-if="it.image" :src="it.image" :alt="it.label" />
+                        <div class="drag-label">{{ it.label }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
+                <div class="drag-actions">
+                  <button class="interactive-btn" @click="evaluateDragDrop(slide.id)">
+                    Prüfen
+                  </button>
+                  <button class="interactive-btn ghost" @click="resetDragDrop(slide.id)">
+                    Zurücksetzen
+                  </button>
+                </div>
+
+                <div v-if="interactiveState[slide.id]?.feedback" class="interactive-feedback"
+                  :class="interactiveState[slide.id]?.level">
+                  <strong>{{ interactiveState[slide.id]?.headline }}</strong>
+                  <div>{{ interactiveState[slide.id]?.feedback }}</div>
+                </div>
+              </div>
+
+
+              <!-- QUIZ -->
+              <div v-else-if="interactiveFor(slide).type === 'quiz'" class="interactive-box">
+                <div v-for="q in interactiveFor(slide).questions" :key="q.id" class="quiz-card">
+                  <div class="quiz-question">{{ q.question }}</div>
+                  <div class="interactive-grid">
+                    <button v-for="opt in q.options" :key="opt.id" class="interactive-btn"
+                      @click="pickQuiz(slide.id, q.id, opt)">
+                      {{ opt.label }}
+                    </button>
+                  </div>
+
+                  <div v-if="interactiveState[slide.id]?.quiz?.[q.id]?.feedback" class="interactive-feedback"
+                    :class="interactiveState[slide.id]?.quiz?.[q.id]?.level">
+                    <strong>{{ interactiveState[slide.id]?.quiz?.[q.id]?.headline }}</strong>
+                    <div>{{ interactiveState[slide.id]?.quiz?.[q.id]?.feedback }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <img v-if="slide.imageUrl" :src="slide.imageUrl" alt="Illustration" class="slide-image"
+                :class="{ bigImage: slide.title === '4.1 Fluchtwege freihalten' }" />
+
+              <div v-if="interactiveState[slide.id]?.done" class="progress-hint completed" style="margin-top: 12px">
+                <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M13.5 4L6 11.5L2.5 8" stroke="#16a34a" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+                Interaktion abgeschlossen
               </div>
             </div>
 
-            <img v-if="slide.imageUrl" :src="slide.imageUrl" alt="Illustration" class="slide-image" :class="{ bigImage: slide.title === '4.1 Fluchtwege freihalten' }"/>
+            <!-- Normale Content-/Summary-Slide -->
+            <div v-else class="slide-content">
+              <div class="content-layout"
+                :class="{ 'content-layout--side': slide.imageUrl && isSideImageSlide(slide, index) }">
+                <div class="content-text">
+                  <div class="rich-body" v-if="slide.body" v-html="parseBody(slide.body)"></div>
+                </div>
 
-            <div v-if="interactiveState[slide.id]?.done" class="progress-hint completed" style="margin-top: 12px">
-              <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M13.5 4L6 11.5L2.5 8"
-                  stroke="#16a34a"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              Interaktion abgeschlossen
+                <div v-if="slide.imageUrl" class="content-media">
+                  <img :src="slide.imageUrl" alt="Illustration" class="slide-image side" :class="{
+                    side: isSideImageSlide(slide, index),
+                    bigCompare: slide.title === '4.1 Fluchtwege freihalten'
+                  }" />
+                </div>
+              </div>
+
+              <!-- Gelesen -->
+              <div v-if="visitedSlides[slide.id]" class="progress-hint completed">
+                <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M13.5 4L6 11.5L2.5 8" stroke="#16a34a" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+                Gelesen
+              </div>
             </div>
+
           </div>
-
-          <!-- Normale Content-/Summary-Slide -->
-         <div v-else class="slide-content">
-  <div
-    class="content-layout"
-    :class="{ 'content-layout--side': slide.imageUrl && isSideImageSlide(slide, index) }"
-  >
-    <div class="content-text">
-      <div class="rich-body" v-if="slide.body">
-        <template v-for="(block, bIdx) in parseBody(slide.body)" :key="bIdx">
-          <p v-if="block.type === 'p'" class="rich-p">{{ block.text }}</p>
-
-          <ul v-else-if="block.type === 'ul'" class="rich-ul">
-            <li v-for="(item, iIdx) in block.items" :key="iIdx">{{ item }}</li>
-          </ul>
-
-          <div v-else-if="block.type === 'warn'" class="rich-warn">
-            <strong>⚠️ Achtung:</strong> {{ block.text }}
-          </div>
-
-          <div v-else-if="block.type === 'check'" class="rich-check">
-            <strong>✅ Merke:</strong> {{ block.text }}
-          </div>
-        </template>
-      </div>
+        </SwiperSlide>
+      </Swiper>
     </div>
 
-    <div v-if="slide.imageUrl" class="content-media">
-      <img :src="slide.imageUrl" alt="Illustration" class="slide-image side"   :class="{ side: isSideImageSlide(slide, index),
-    bigCompare: slide.title === '4.1 Fluchtwege freihalten' }"/>
-    </div>
-  </div>
-
-  <!-- Gelesen -->
-  <div v-if="visitedSlides[slide.id]" class="progress-hint completed">
-    <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M13.5 4L6 11.5L2.5 8" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
-    Gelesen
-  </div>
-</div>
-
+    <!-- Fixed Bottom Bar: Progress + Finish -->
+    <div class="bottom-bar">
+      <div class="bottom-bar-content">
+        <div class="progress-section">
+          <div class="progress-bar-container">
+            <div class="progress-bar" :style="{ width: progressPercentage + '%' }"></div>
+          </div>
+          <p class="progress-text">{{ completedSlidesCount }} / {{ totalSlidesCount }} abgeschlossen</p>
         </div>
-      </SwiperSlide>
-    </Swiper>
 
-    <!-- Fortschrittsanzeige -->
-    <div class="overall-progress">
-      <div class="progress-bar-container">
-        <div class="progress-bar" :style="{ width: progressPercentage + '%' }"></div>
+        <button v-if="allSlidesCompleted" class="finish-btn" @click="finishChapter">
+          ✓ Kapitel abschließen
+        </button>
+        <div v-else class="finish-hint-compact">
+          Schließe alle Einheiten ab
+        </div>
       </div>
-      <p class="progress-text">{{ completedSlidesCount }} von {{ totalSlidesCount }} Abschnitten abgeschlossen</p>
-    </div>
-
-    <button v-if="allSlidesCompleted" class="finish-btn" @click="finishChapter">
-      Kapitel abschließen
-    </button>
-    <div v-else class="finish-hint">
-      Bitte schließe alle Lerneinheiten ab, um das Kapitel abzuschließen
     </div>
   </div>
 
@@ -420,6 +319,7 @@ import { onMounted, ref, computed, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
+import { marked } from "marked";
 
 import { useChapterStore } from "../stores/chapterStore";
 import fireflyNormal from "../assets/images/firefly-normal.png";
@@ -476,33 +376,33 @@ const INTERACTIVES = {
         id: "fenster",
         question: "Fenster öffnen?",
         options: [
-          { id: "a", label: "Ja, damit Rauch raus kann", correct:false, level: "bad", headline: "Falsch ❌", feedback: "Kann Feuer/Rauch anfachen. Lieber raus." },
-          { id: "b", label: "Nein, evakuieren",correct:true, level: "good", headline: "Richtig ✅", feedback: "Schnell und geordnet raus ist wichtiger." },
+          { id: "a", label: "Ja, damit Rauch raus kann", correct: false, level: "bad", headline: "Falsch ❌", feedback: "Kann Feuer/Rauch anfachen. Lieber raus." },
+          { id: "b", label: "Nein, evakuieren", correct: true, level: "good", headline: "Richtig ✅", feedback: "Schnell und geordnet raus ist wichtiger." },
         ],
       },
       {
         id: "tuere",
         question: "Tür schließen?",
         options: [
-          { id: "a", label: "Ja, aber nicht versperren",correct:true, level: "good", headline: "Richtig ✅", feedback: "Bremst Rauch/Feuer und bleibt zugänglich." },
-          { id: "b", label: "Nein, offen lassen",correct:false, level: "bad", headline: "Falsch ❌", feedback: "Offene Türen lassen Rauch schneller ausbreiten." },
+          { id: "a", label: "Ja, aber nicht versperren", correct: true, level: "good", headline: "Richtig ✅", feedback: "Bremst Rauch/Feuer und bleibt zugänglich." },
+          { id: "b", label: "Nein, offen lassen", correct: false, level: "bad", headline: "Falsch ❌", feedback: "Offene Türen lassen Rauch schneller ausbreiten." },
         ],
       },
       {
         id: "lift",
         question: "Aufzug benutzen?",
         options: [
-          { id: "a", label: "Ja, schneller",correct:false, level: "danger", headline: "Gefährlich ⚠️", feedback: "Nie! Stromausfall/Rauch kann lebensgefährlich sein." },
-          { id: "b", label: "Nein, Stiegenhaus",correct:true, level: "good", headline: "Richtig ✅", feedback: "Stiegenhaus ist der sichere Weg." },
+          { id: "a", label: "Ja, schneller", correct: false, level: "danger", headline: "Gefährlich ⚠️", feedback: "Nie! Stromausfall/Rauch kann lebensgefährlich sein." },
+          { id: "b", label: "Nein, Stiegenhaus", correct: true, level: "good", headline: "Richtig ✅", feedback: "Stiegenhaus ist der sichere Weg." },
         ],
       },
       {
         id: "mitnehmen",
         question: "Was nimmst du mit?",
         options: [
-          { id: "a", label: "Jacke, Tasche, Laptop",correct:false, level: "bad", headline: "Zeitverlust ❌", feedback: "Nichts sammeln – raus! Jede Sekunde zählt." },
-          { id: "b", label: "Trinkflasche, falls ich damit potentiell was löschen könnte",correct:false, level: "good", headline: "Dumm ❌", feedback: "Nur wenn es sofort geht – sonst weglassen." },
-          { id: "c", label: "Gar nichts – sofort raus",correct:true, level: "good", headline: "Sehr gut ✅", feedback: "Schnell raus ist am sichersten." },
+          { id: "a", label: "Jacke, Tasche, Laptop", correct: false, level: "bad", headline: "Zeitverlust ❌", feedback: "Nichts sammeln – raus! Jede Sekunde zählt." },
+          { id: "b", label: "Trinkflasche, falls ich damit potentiell was löschen könnte", correct: false, level: "good", headline: "Dumm ❌", feedback: "Nur wenn es sofort geht – sonst weglassen." },
+          { id: "c", label: "Gar nichts – sofort raus", correct: true, level: "good", headline: "Sehr gut ✅", feedback: "Schnell raus ist am sichersten." },
         ],
       },
     ],
@@ -515,42 +415,42 @@ const INTERACTIVES = {
         id: "papierkorb",
         question: "Papierkorb brennt klein, Rauch wenig.",
         options: [
-          { id: "a", label: "Löschen", correct:true, level: "good", headline: "Kann passen ✅", feedback: "Nur wenn Rückzug frei ist und du sicher bist." },
-          { id: "b", label: "Flüchten", correct:true, level: "good", headline: "Auch ok ✅", feedback: "Sicherheit geht immer vor – melden nicht vergessen." },
+          { id: "a", label: "Löschen", correct: true, level: "good", headline: "Kann passen ✅", feedback: "Nur wenn Rückzug frei ist und du sicher bist." },
+          { id: "b", label: "Flüchten", correct: true, level: "good", headline: "Auch ok ✅", feedback: "Sicherheit geht immer vor – melden nicht vergessen." },
         ],
       },
       {
         id: "fettbrand",
         question: "Fettbrand (z.B. in Küche).",
         options: [
-          { id: "a", label: "Löschen", correct:false, level: "danger", headline: "Gefährlich ⚠️", feedback: "Fettbrand nie mit Wasser! Lieber flüchten & melden." },
-          { id: "b", label: "Flüchten", correct:true, level: "good", headline: "Richtig ✅", feedback: "Melden und Abstand halten." },
+          { id: "a", label: "Löschen", correct: false, level: "danger", headline: "Gefährlich ⚠️", feedback: "Fettbrand nie mit Wasser! Lieber flüchten & melden." },
+          { id: "b", label: "Flüchten", correct: true, level: "good", headline: "Richtig ✅", feedback: "Melden und Abstand halten." },
         ],
       },
       {
         id: "elektro",
         question: "Elektrogerät brennt / Steckdose schmort.",
         options: [
-          { id: "a", label: "Löschen", correct:false, level: "bad", headline: "Nur mit Wissen ❌", feedback: "Elektrik ist riskant. Besser: Strom weg, melden, flüchten." },
-          { id: "b", label: "Flüchten", correct:true, level: "good", headline: "Richtig ✅", feedback: "Melden und Bereich räumen." },
+          { id: "a", label: "Löschen", correct: false, level: "bad", headline: "Nur mit Wissen ❌", feedback: "Elektrik ist riskant. Besser: Strom weg, melden, flüchten." },
+          { id: "b", label: "Flüchten", correct: true, level: "good", headline: "Richtig ✅", feedback: "Melden und Bereich räumen." },
         ],
       },
     ],
   },
 
   "Interaktiv: Gefahren erkennen": {
-  type: "multiselect",
-  prompt: "Wähle alle Brandgefahren aus:",
-  options: [
-    { id: "kippe", label: "Glühende Zigarette / Kippe", correct: true },
-    { id: "muell", label: "Müll/ Papier in der Nähe", correct: true },
-    { id: "wind", label: "Wind (Funkenflug)", correct: true },
-    { id: "asche", label: "Asche auf dem Boden", correct: true },
+    type: "multiselect",
+    prompt: "Wähle alle Brandgefahren aus:",
+    options: [
+      { id: "kippe", label: "Glühende Zigarette / Kippe", correct: true },
+      { id: "muell", label: "Müll/ Papier in der Nähe", correct: true },
+      { id: "wind", label: "Wind (Funkenflug)", correct: true },
+      { id: "asche", label: "Asche auf dem Boden", correct: true },
 
-    { id: "regen", label: "Regenwetter", correct: false },
-    { id: "jacke", label: "Jemand trägt eine Jacke", correct: false },
-  ],
-},
+      { id: "regen", label: "Regenwetter", correct: false },
+      { id: "jacke", label: "Jemand trägt eine Jacke", correct: false },
+    ],
+  },
 
   "Interaktiv: Risiko richtig einschätzen": {
     type: "quiz",
@@ -561,7 +461,7 @@ const INTERACTIVES = {
         options: [
           { id: "gruen", label: "🟢 Grün (normal)", correct: true, level: "good", headline: "Richtig ✅", feedback: "Normalzustand. Trotzdem: Regeln einhalten." },
           { id: "gelb", label: "🟡 Gelb (Warnung)", correct: false, level: "bad", headline: "Zu streng ❌", feedback: "Gelb ist erst bei Hitze/Schäden." },
-          { id: "rot",  label: "🔴 Rot (Gefahr)", correct: false, level: "danger", headline: "Zu dramatisch ⚠️", feedback: "Rot ist Rauch, Zischen, Geruch." },
+          { id: "rot", label: "🔴 Rot (Gefahr)", correct: false, level: "danger", headline: "Zu dramatisch ⚠️", feedback: "Rot ist Rauch, Zischen, Geruch." },
         ],
       },
       {
@@ -570,7 +470,7 @@ const INTERACTIVES = {
         options: [
           { id: "gruen", label: "🟢 Grün (normal)", correct: false, level: "bad", headline: "Falsch ❌", feedback: "Hitze/Aufblähen ist Warnsignal." },
           { id: "gelb", label: "🟡 Gelb (Warnung)", correct: true, level: "good", headline: "Richtig ✅", feedback: "Warnung: ausstecken (wenn sicher), Abstand, melden." },
-          { id: "rot",  label: "🔴 Rot (Gefahr)", correct: false, level: "danger", headline: "Fast…", feedback: "Rot ist eher Rauch/Zischen/Brandgeruch." },
+          { id: "rot", label: "🔴 Rot (Gefahr)", correct: false, level: "danger", headline: "Fast…", feedback: "Rot ist eher Rauch/Zischen/Brandgeruch." },
         ],
       },
       {
@@ -579,7 +479,7 @@ const INTERACTIVES = {
         options: [
           { id: "gruen", label: "🟢 Grün (normal)", correct: false, level: "bad", headline: "Nein ❌", feedback: "Das ist nicht normal." },
           { id: "gelb", label: "🟡 Gelb (Warnung)", correct: false, level: "bad", headline: "Zu niedrig ❌", feedback: "Das ist akute Gefahr." },
-          { id: "rot",  label: "🔴 Rot (Gefahr)", correct: true, level: "danger", headline: "Richtig ⚠️", feedback: "Abstand halten, melden, evakuieren – nicht experimentieren." },
+          { id: "rot", label: "🔴 Rot (Gefahr)", correct: true, level: "danger", headline: "Richtig ⚠️", feedback: "Abstand halten, melden, evakuieren – nicht experimentieren." },
         ],
       },
     ],
@@ -632,7 +532,7 @@ const INTERACTIVES = {
     ],
   },
 
-    "Übung: Wo darf ich abstellen?": {
+  "Übung: Wo darf ich abstellen?": {
     type: "multiselect",
     prompt: "Wähle 4 richtige Abstellorte aus:",
     options: [
@@ -668,64 +568,64 @@ const INTERACTIVES = {
 
 
   "Miniquiz: Vorbereitung – richtig oder falsch?": {
-  type: "quiz",
-  questions: [
-    {
-      id: "q1",
-      question: "Kartons kurz im Gang lagern ist ok, solange es „nur 10 Minuten“ sind.",
-      options: [
-        { id: "t", label: "Richtig", correct: false, level: "danger", headline: "Falsch ❌", feedback: "Fluchtwege müssen immer frei sein – auch kurzzeitig." },
-        { id: "f", label: "Falsch", correct: true,  level: "good",   headline: "Richtig ✅", feedback: "Genau: nichts in Gänge/Stiegenhäuser stellen." },
-      ],
-    },
-    {
-      id: "q2",
-      question: "Kabel quer über den Weg sind gefährlich (Stolperfallen).",
-      options: [
-        { id: "t", label: "Richtig", correct: true,  level: "good", headline: "Richtig ✅", feedback: "Kabel sichern oder umleiten – Wege müssen sicher bleiben." },
-        { id: "f", label: "Falsch",  correct: false, level: "bad",  headline: "Falsch ❌", feedback: "Das ist eine typische Stolperfalle." },
-      ],
-    },
-    {
-      id: "q3",
-      question: "Notausgänge darf man mit Deko zustellen, wenn es schöner aussieht.",
-      options: [
-        { id: "t", label: "Richtig", correct: false, level: "danger", headline: "Gefährlich ❌", feedback: "Notausgänge dürfen nie blockiert oder verdeckt sein." },
-        { id: "f", label: "Falsch",  correct: true,  level: "good",   headline: "Richtig ✅", feedback: "Sicherheit geht vor Deko." },
-      ],
-    },
-    {
-      id: "q4",
-      question: "Feuerlöscher müssen zugänglich bleiben (nicht zustellen).",
-      options: [
-        { id: "t", label: "Richtig", correct: true,  level: "good", headline: "Richtig ✅", feedback: "Im Ernstfall muss man sofort hinkommen." },
-        { id: "f", label: "Falsch",  correct: false, level: "bad",  headline: "Falsch ❌", feedback: "Zustellen kostet Zeit und ist gefährlich." },
-      ],
-    },
-  ],
-},
+    type: "quiz",
+    questions: [
+      {
+        id: "q1",
+        question: "Kartons kurz im Gang lagern ist ok, solange es „nur 10 Minuten“ sind.",
+        options: [
+          { id: "t", label: "Richtig", correct: false, level: "danger", headline: "Falsch ❌", feedback: "Fluchtwege müssen immer frei sein – auch kurzzeitig." },
+          { id: "f", label: "Falsch", correct: true, level: "good", headline: "Richtig ✅", feedback: "Genau: nichts in Gänge/Stiegenhäuser stellen." },
+        ],
+      },
+      {
+        id: "q2",
+        question: "Kabel quer über den Weg sind gefährlich (Stolperfallen).",
+        options: [
+          { id: "t", label: "Richtig", correct: true, level: "good", headline: "Richtig ✅", feedback: "Kabel sichern oder umleiten – Wege müssen sicher bleiben." },
+          { id: "f", label: "Falsch", correct: false, level: "bad", headline: "Falsch ❌", feedback: "Das ist eine typische Stolperfalle." },
+        ],
+      },
+      {
+        id: "q3",
+        question: "Notausgänge darf man mit Deko zustellen, wenn es schöner aussieht.",
+        options: [
+          { id: "t", label: "Richtig", correct: false, level: "danger", headline: "Gefährlich ❌", feedback: "Notausgänge dürfen nie blockiert oder verdeckt sein." },
+          { id: "f", label: "Falsch", correct: true, level: "good", headline: "Richtig ✅", feedback: "Sicherheit geht vor Deko." },
+        ],
+      },
+      {
+        id: "q4",
+        question: "Feuerlöscher müssen zugänglich bleiben (nicht zustellen).",
+        options: [
+          { id: "t", label: "Richtig", correct: true, level: "good", headline: "Richtig ✅", feedback: "Im Ernstfall muss man sofort hinkommen." },
+          { id: "f", label: "Falsch", correct: false, level: "bad", headline: "Falsch ❌", feedback: "Zustellen kostet Zeit und ist gefährlich." },
+        ],
+      },
+    ],
+  },
 
 
-"Übung: Evakuierung – richtige Reihenfolge": {
-  type: "dragdrop",
-  prompt: "Ordne die Schritte in die richtige Reihenfolge (1 → 6):",
-  buckets: [
-    { id: "s1", title: "1" },
-    { id: "s2", title: "2" },
-    { id: "s3", title: "3" },
-    { id: "s4", title: "4" },
-    { id: "s5", title: "5" },
-    { id: "s6", title: "6" },
-  ],
-  items: [
-    { id: "a", label: "Ruhe bewahren – Alarm ernst nehmen", image: null, correctBucket: "s1" },
-    { id: "b", label: "Anweisungen der Lehrperson befolgen", image: null, correctBucket: "s2" },
-    { id: "c", label: "Fluchtweg-Schildern folgen", image: null, correctBucket: "s3" },
-    { id: "d", label: "Nicht drängeln – nicht zurücklaufen", image: null, correctBucket: "s4" },
-    { id: "e", label: "Zum Sammelplatz gehen", image: null, correctBucket: "s5" },
-    { id: "f", label: "Warten auf weitere Infos", image: null, correctBucket: "s6" },
-  ],
-},
+  "Übung: Evakuierung – richtige Reihenfolge": {
+    type: "dragdrop",
+    prompt: "Ordne die Schritte in die richtige Reihenfolge (1 → 6):",
+    buckets: [
+      { id: "s1", title: "1" },
+      { id: "s2", title: "2" },
+      { id: "s3", title: "3" },
+      { id: "s4", title: "4" },
+      { id: "s5", title: "5" },
+      { id: "s6", title: "6" },
+    ],
+    items: [
+      { id: "a", label: "Ruhe bewahren – Alarm ernst nehmen", image: null, correctBucket: "s1" },
+      { id: "b", label: "Anweisungen der Lehrperson befolgen", image: null, correctBucket: "s2" },
+      { id: "c", label: "Fluchtweg-Schildern folgen", image: null, correctBucket: "s3" },
+      { id: "d", label: "Nicht drängeln – nicht zurücklaufen", image: null, correctBucket: "s4" },
+      { id: "e", label: "Zum Sammelplatz gehen", image: null, correctBucket: "s5" },
+      { id: "f", label: "Warten auf weitere Infos", image: null, correctBucket: "s6" },
+    ],
+  },
 
 
 };
@@ -794,7 +694,7 @@ let swiperInstance = null;
 const isSideImageSlide = (slide, index) => {
   const chapterOrder = chapterStore.currentChapter?.order;
   // Kapitel 4: Vergleichsbild soll NICHT side-layout sein
-if (slide?.title === "4.1 Fluchtwege freihalten") return false;
+  if (slide?.title === "4.1 Fluchtwege freihalten") return false;
 
 
   // ✅ Kapitel 2: Nur diese Slides sollen Bild rechts (side layout) haben
@@ -870,14 +770,14 @@ const loadProgressForChapter = async (chapter) => {
     activeIndex.value = startIndex;
 
     chapter.slides.forEach((slide, idx) => {
-  if (idx <= startIndex) {
-    if (slide.type === "video") {
-      videoCompleted.value[slide.id] = true;
-    } else {
-      visitedSlides.value[slide.id] = true;
-    }
-  }
-});
+      if (idx <= startIndex) {
+        if (slide.type === "video") {
+          videoCompleted.value[slide.id] = true;
+        } else {
+          visitedSlides.value[slide.id] = true;
+        }
+      }
+    });
 
 
     await nextTick();
@@ -913,40 +813,8 @@ watch(
 );
 
 const parseBody = (text) => {
-  const lines = (text || "").split("\n").map((l) => l.trim()).filter(Boolean);
-
-  const blocks = [];
-  let list = [];
-
-  const flushList = () => {
-    if (list.length) {
-      blocks.push({ type: "ul", items: list });
-      list = [];
-    }
-  };
-
-  for (const line of lines) {
-    if (line.startsWith("- ")) {
-      list.push(line.replace("- ", ""));
-      continue;
-    }
-    if (line.startsWith("! ")) {
-      flushList();
-      blocks.push({ type: "warn", text: line.replace("! ", "") });
-      continue;
-    }
-    if (line.startsWith("✓ ")) {
-      flushList();
-      blocks.push({ type: "check", text: line.replace("✓ ", "") });
-      continue;
-    }
-
-    flushList();
-    blocks.push({ type: "p", text: line });
-  }
-
-  flushList();
-  return blocks;
+  if (!text) return "";
+  return marked(text, { breaks: true });
 };
 
 const interactiveState = ref({});
@@ -992,7 +860,7 @@ const pickDecision = (slideId, opt) => {
   st.done = !!opt.correct;
 
   // Gelesen/abgeschlossen nur wenn richtig
-  if (st.done){
+  if (st.done) {
     visitedSlides.value[slideId] = true;
     nextTick(() => updateSwiperNavigation());
   }
@@ -1018,11 +886,11 @@ const pickQuiz = (slideId, questionId, opt) => {
   if (thisCfg?.questions?.length) {
     // Done nur wenn ALLE Fragen beantwortet UND alle richtig sind
     const allAnswered = thisCfg.questions.every(q => st.quiz?.[q.id]);
-    const allCorrect  = thisCfg.questions.every(q => st.quiz?.[q.id]?.correct === true);
+    const allCorrect = thisCfg.questions.every(q => st.quiz?.[q.id]?.correct === true);
 
     st.done = allAnswered && allCorrect;
 
-    if (st.done){ 
+    if (st.done) {
       visitedSlides.value[slideId] = true;
       nextTick(() => updateSwiperNavigation());
     }
@@ -1041,7 +909,7 @@ const toggleMulti = (slideId, opt) => {
   if (!iCfg) return;
 
   const correctIds = iCfg.options.filter(o => o.correct).map(o => o.id);
-  const wrongIds   = iCfg.options.filter(o => !o.correct).map(o => o.id);
+  const wrongIds = iCfg.options.filter(o => !o.correct).map(o => o.id);
 
   const hasWrong = st.selected.some(id => wrongIds.includes(id));
   const missing = correctIds.filter(id => !st.selected.includes(id));
@@ -1136,10 +1004,10 @@ const setSwiperDragEnabled = (enabled) => {
 const onDragStart = (slideId, itemId, e) => {
   dragPayload.value = { slideId, itemId };
 
-    e.dataTransfer.setData("text/plain", itemId);
+  e.dataTransfer.setData("text/plain", itemId);
   e.dataTransfer.effectAllowed = "move";
 
-    setSwiperDragEnabled(false);
+  setSwiperDragEnabled(false);
 };
 
 const onDrop = (slideId, bucketId) => {
@@ -1181,16 +1049,16 @@ const evaluateDragDrop = (slideId) => {
     return;
   }
 
- const placed = Object.fromEntries(
-  Object.entries(st.dragdrop.buckets).map(([k, ids]) => [k, new Set(ids)])
-);
+  const placed = Object.fromEntries(
+    Object.entries(st.dragdrop.buckets).map(([k, ids]) => [k, new Set(ids)])
+  );
 
 
   let wrong = 0;
 
   for (const it of cfg.items) {
-  const correct = !!placed[it.correctBucket]?.has(it.id);
-  if(!correct) wrong++;
+    const correct = !!placed[it.correctBucket]?.has(it.id);
+    if (!correct) wrong++;
 
   }
 
@@ -1216,10 +1084,10 @@ const resetDragDrop = (slideId) => {
   const cfg = getDragCfg(slideId);
   if (!cfg) return;
 
-st.dragdrop = {
-  unassigned: cfg.items.map(i => i.id),
-  buckets: Object.fromEntries((cfg.buckets || []).map(b => [b.id, []])),
-};
+  st.dragdrop = {
+    unassigned: cfg.items.map(i => i.id),
+    buckets: Object.fromEntries((cfg.buckets || []).map(b => [b.id, []])),
+  };
 
 
   st.done = false;
@@ -1262,20 +1130,20 @@ const onSlideChange = (swiper) => {
   }
 
   // Wenn vorige Slide interaktiv und NICHT richtig abgeschlossen -> zurück
-if (prevSlide && interactiveFor(prevSlide) && !isInteractiveComplete(prevSlide)) {
-  swiper.slideTo(prevIndex, 0);
-  return;
-}
-if (prevSlide && prevSlide.type !== "video" && !interactiveFor(prevSlide)) {
-  visitedSlides.value[prevSlide.id] = true;
-}
+  if (prevSlide && interactiveFor(prevSlide) && !isInteractiveComplete(prevSlide)) {
+    swiper.slideTo(prevIndex, 0);
+    return;
+  }
+  if (prevSlide && prevSlide.type !== "video" && !interactiveFor(prevSlide)) {
+    visitedSlides.value[prevSlide.id] = true;
+  }
 
 
   activeIndex.value = swiper.activeIndex;
   const currentSlide = chapter.slides[swiper.activeIndex];
- if (currentSlide && currentSlide.type !== "video" && !interactiveFor(currentSlide)) {
-  visitedSlides.value[currentSlide.id] = true;
-}
+  if (currentSlide && currentSlide.type !== "video" && !interactiveFor(currentSlide)) {
+    visitedSlides.value[currentSlide.id] = true;
+  }
 
 
   updateSwiperNavigation();
@@ -1293,13 +1161,23 @@ const updateSwiperNavigation = () => {
     swiperInstance.allowSlideNext = false;
   }
   else if (currentSlide && interactiveFor(currentSlide) && !isInteractiveComplete(currentSlide)) {
-  swiperInstance.allowSlideNext = false;
-}
-else {
-  swiperInstance.allowSlideNext = true;
-}
+    swiperInstance.allowSlideNext = false;
+  }
+  else {
+    swiperInstance.allowSlideNext = true;
+  }
 
   swiperInstance.update();
+};
+
+const goToPrevSlide = () => {
+  if (!swiperInstance || activeIndex.value === 0 || !canNavigate.value) return;
+  swiperInstance.slidePrev();
+};
+
+const goToNextSlide = () => {
+  if (!swiperInstance || !canGoNext.value) return;
+  swiperInstance.slideNext();
 };
 
 const onVideoLoaded = (event, slideId) => {
@@ -1415,19 +1293,20 @@ const allSlidesCompleted = computed(() => {
   });
 });
 
-const canGoNext = computed(() => {
+// Check if current slide allows navigation (used for both arrows)
+const canNavigate = computed(() => {
   const chapter = chapterStore.currentChapter;
   if (!chapter || !chapter.slides) return true;
 
   const currentSlide = chapter.slides[activeIndex.value];
   if (!currentSlide) return true;
 
-  // Video: nur weiter wenn fertig
+  // Video: allow navigation only when completed
   if (currentSlide.type === "video") {
     return !!videoCompleted.value[currentSlide.id];
   }
 
-  // Interaktiv: nur weiter wenn richtig abgeschlossen
+  // Interaktiv: allow navigation only when correctly completed
   if (interactiveFor(currentSlide)) {
     return isInteractiveComplete(currentSlide);
   }
@@ -1435,18 +1314,22 @@ const canGoNext = computed(() => {
   return true;
 });
 
+const canGoNext = computed(() => {
+  return canNavigate.value;
+});
+
 
 const finishChapter = async () => {
   const chapter = chapterStore.currentChapter;
-if (chapter?.slides?.length) {
-  const currentSlide = chapter.slides[activeIndex.value];
-  if (currentSlide) {
-    // wenn nicht Video: als gelesen markieren
-    if (currentSlide.type !== "video") {
-      visitedSlides.value[currentSlide.id] = true;
+  if (chapter?.slides?.length) {
+    const currentSlide = chapter.slides[activeIndex.value];
+    if (currentSlide) {
+      // wenn nicht Video: als gelesen markieren
+      if (currentSlide.type !== "video") {
+        visitedSlides.value[currentSlide.id] = true;
+      }
     }
   }
-}
 
   if (!allSlidesCompleted.value) return;
 
@@ -1538,12 +1421,13 @@ const saveProgress = async () => {
 <style scoped>
 .page {
   min-height: 100vh;
-  padding: 32px 16px 40px;
+  padding: 16px 12px 100px;
   background: #020617;
   color: #e5e7eb;
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
 .page-center {
@@ -1558,16 +1442,16 @@ const saveProgress = async () => {
 }
 
 .back-btn {
-  padding: 8px 14px;
+  padding: 7px 12px;
   border-radius: 999px;
   border: 1px solid #374151;
   background: #020617;
   color: #e5e7eb;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s;
 }
 
@@ -1588,25 +1472,27 @@ const saveProgress = async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .chapter-meta h1 {
-  margin: 4px 0 0;
-  font-size: 2rem;
+  margin: 2px 0 0;
+  font-size: 1.5rem;
+  line-height: 1.3;
 }
 
 .chapter-label {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #9ca3af;
+  margin: 0;
 }
 
 .hero-image {
-  max-width: 260px;
-  border-radius: 16px;
+  max-width: 180px;
+  border-radius: 12px;
   object-fit: cover;
 }
 
@@ -1615,38 +1501,94 @@ const saveProgress = async () => {
   max-width: 900px;
 }
 
+.swiper-container {
+  width: 100%;
+  max-width: 900px;
+  position: relative;
+}
+
+.swiper-nav-button {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(249, 115, 22, 0.95);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  z-index: 50;
+}
+
+.swiper-nav-prev {
+  left: 20px;
+}
+
+.swiper-nav-next {
+  right: 20px;
+}
+
+.swiper-nav-button:hover:not(.disabled) {
+  background: rgba(249, 115, 22, 1);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+}
+
+.swiper-nav-button:active:not(.disabled) {
+  transform: scale(0.95);
+}
+
+.swiper-nav-button.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: rgba(107, 114, 128, 0.5);
+  border-color: rgba(107, 114, 128, 0.3);
+}
+
+.swiper-nav-button svg {
+  width: 24px;
+  height: 24px;
+}
+
 .slide-card {
   background: #020617;
-  border-radius: 18px;
+  border-radius: 16px;
   border: 1px solid #1f2937;
-  padding: 22px 20px 24px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  padding: 16px 16px 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
 .slide-type {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #f97316;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .slide-title {
-  font-size: 1.4rem;
-  margin-bottom: 12px;
+  font-size: 1.25rem;
+  margin-bottom: 10px;
+  line-height: 1.3;
 }
 
 .slide-image {
-  margin-top: 18px;
+  margin-top: 12px;
   max-width: 100%;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
 .video-wrapper video,
 .video-wrapper iframe {
   width: 100%;
-  border-radius: 14px;
-  margin: 12px 0 16px;
+  border-radius: 12px;
+  margin: 10px 0 12px;
   background: black;
 }
 
@@ -1658,20 +1600,20 @@ const saveProgress = async () => {
 .custom-video-container video {
   width: 100%;
   aspect-ratio: 16/9;
-  border-radius: 14px;
+  border-radius: 12px;
   background: black;
   cursor: pointer;
-  margin: 12px 0 0;
+  margin: 10px 0 0;
 }
 
 .custom-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 8px 12px;
   background: rgba(0, 0, 0, 0.8);
-  border-radius: 0 0 14px 14px;
-  margin: 0 0 16px;
+  border-radius: 0 0 12px 12px;
+  margin: 0 0 12px;
 }
 
 .play-btn,
@@ -1679,7 +1621,7 @@ const saveProgress = async () => {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
+  padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1692,18 +1634,18 @@ const saveProgress = async () => {
 }
 
 .play-btn {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
 }
 
 .volume-btn {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   margin-left: auto;
 }
 
 .time-display {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: white;
   font-family: "Courier New", monospace;
   letter-spacing: 0.5px;
@@ -1713,13 +1655,13 @@ const saveProgress = async () => {
 .progress-hint {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 10px 14px;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 12px;
   background: rgba(249, 115, 22, 0.1);
   border: 1px solid rgba(249, 115, 22, 0.3);
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #f97316;
 }
 
@@ -1740,19 +1682,42 @@ const saveProgress = async () => {
   flex-shrink: 0;
 }
 
-.overall-progress {
-  width: 100%;
-  max-width: 900px;
-  margin-top: 24px;
+/* Fixed Bottom Bar */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.95), rgba(2, 6, 23, 0.98));
+  backdrop-filter: blur(10px);
+  border-top: 1px solid #1f2937;
+  padding: 12px 16px;
+  z-index: 40;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.bottom-bar-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.progress-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .progress-bar-container {
-  width: 100%;
+  flex: 1;
   height: 8px;
   background: #1f2937;
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 8px;
 }
 
 .progress-bar {
@@ -1763,54 +1728,131 @@ const saveProgress = async () => {
 }
 
 .progress-text {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #9ca3af;
-  text-align: center;
+  white-space: nowrap;
+  font-weight: 500;
+  margin: 0;
 }
 
 @media (max-width: 768px) {
+  .page {
+    padding: 12px 8px 110px;
+  }
+
+  .bottom-bar {
+    padding: 10px 12px;
+  }
+
+  .bottom-bar-content {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .progress-section {
+    width: 100%;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .progress-text {
+    font-size: 0.75rem;
+    text-align: center;
+  }
+
+  .finish-btn,
+  .finish-hint-compact {
+    width: 100%;
+    text-align: center;
+    font-size: 0.85rem;
+    white-space: normal;
+  }
+
+  .swiper-nav-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .swiper-nav-prev {
+    left: 8px;
+  }
+
+  .swiper-nav-next {
+    right: 8px;
+  }
+
+  .swiper-nav-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
   .chapter-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .chapter-meta h1 {
+    font-size: 1.35rem;
   }
 
   .hero-image {
-    max-width: 100%;
+    max-width: 160px;
+    align-self: center;
+  }
+
+  .header-right {
     width: 100%;
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+
+  .back-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .slide-card {
+    padding: 14px 12px 16px;
+  }
+
+  .slide-title {
+    font-size: 1.15rem;
   }
 }
 
 .finish-btn {
-  margin-top: 20px;
-  padding: 14px 24px;
-  border-radius: 12px;
+  padding: 10px 24px;
+  border-radius: 8px;
   background: #16a34a;
   color: white;
-  font-size: 18px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  width: 100%;
-  max-width: 350px;
   border: none;
-  transition: background 0.2s ease;
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .finish-btn:hover {
   background: #15803d;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.5);
 }
 
-.finish-hint {
-  margin-top: 20px;
-  padding: 14px 24px;
-  border-radius: 12px;
-  background: rgba(107, 114, 128, 0.1);
-  border: 1px solid #374151;
+.finish-hint-compact {
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(107, 114, 128, 0.15);
+  border: 1px solid rgba(107, 114, 128, 0.25);
   color: #9ca3af;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   text-align: center;
-  width: 100%;
-  max-width: 350px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .error-box {
@@ -1852,9 +1894,19 @@ const saveProgress = async () => {
 }
 
 @keyframes modalBounce {
-  0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
-  50% { transform: scale(1.05) rotate(2deg); }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  0% {
+    transform: scale(0.3) rotate(-10deg);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.05) rotate(2deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
 }
 
 .celebration-content {
@@ -1868,8 +1920,13 @@ const saveProgress = async () => {
 }
 
 @keyframes iconBounce {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(-10px) scale(1.1); }
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    transform: translateY(-10px) scale(1.1);
+  }
 }
 
 .celebration-title {
@@ -1884,8 +1941,15 @@ const saveProgress = async () => {
 }
 
 @keyframes titleGlow {
-  0%, 100% { filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.6)); }
-  50% { filter: drop-shadow(0 0 16px rgba(249, 115, 22, 0.9)); }
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.6));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 16px rgba(249, 115, 22, 0.9));
+  }
 }
 
 .celebration-message {
@@ -1944,19 +2008,19 @@ const saveProgress = async () => {
 
 .firefly-companion {
   position: fixed;
-  bottom: 32px;
-  right: 32px;
+  bottom: 20px;
+  right: 20px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 16px;
+  gap: 10px;
   z-index: 100;
-  max-width: 320px;
+  max-width: 280px;
 }
 
 .firefly-image {
-  width: 120px;
-  height: 120px;
+  width: 90px;
+  height: 90px;
   object-fit: contain;
   filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.4));
   transition: transform 0.3s ease;
@@ -1967,21 +2031,28 @@ const saveProgress = async () => {
 }
 
 @keyframes fireflyFloat {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50% { transform: translateY(-12px) rotate(2deg); }
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-12px) rotate(2deg);
+  }
 }
 
 .firefly-speech-bubble {
   background: linear-gradient(135deg, #f97316, #ea580c);
   color: white;
-  padding: 14px 20px;
-  border-radius: 18px;
-  font-size: 0.95rem;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 0.85rem;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.35;
   box-shadow: 0 4px 16px rgba(249, 115, 22, 0.4);
   position: relative;
-  max-width: 280px;
+  max-width: 240px;
   animation: bubblePop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   text-align: right;
 }
@@ -1989,56 +2060,88 @@ const saveProgress = async () => {
 .firefly-speech-bubble::after {
   content: "";
   position: absolute;
-  bottom: -10px;
-  right: 50px;
+  bottom: -8px;
+  right: 40px;
   width: 0;
   height: 0;
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-top: 12px solid #ea580c;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #ea580c;
 }
 
 @keyframes bubblePop {
-  0% { transform: scale(0.8) translateY(10px); opacity: 0; }
-  100% { transform: scale(1) translateY(0); opacity: 1; }
+  0% {
+    transform: scale(0.8) translateY(10px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 768px) {
-  .firefly-companion { bottom: 20px; right: 20px; max-width: 240px; gap: 12px; }
-  .firefly-image { width: 90px; height: 90px; }
-  .firefly-speech-bubble { font-size: 0.85rem; padding: 12px 16px; max-width: 220px; }
-  .firefly-speech-bubble::after { right: 35px; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid #ea580c; bottom: -9px; }
+  .firefly-companion {
+    bottom: 12px;
+    right: 12px;
+    max-width: 200px;
+    gap: 8px;
+  }
+
+  .firefly-image {
+    width: 70px;
+    height: 70px;
+  }
+
+  .firefly-speech-bubble {
+    font-size: 0.75rem;
+    padding: 8px 12px;
+    max-width: 180px;
+    border-radius: 12px;
+  }
+
+  .firefly-speech-bubble::after {
+    right: 30px;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #ea580c;
+    bottom: -7px;
+  }
 }
 
 .interactive-box {
-  margin-top: 16px;
-  padding: 14px;
+  margin-top: 12px;
+  padding: 12px;
   border: 1px solid #1f2937;
-  border-radius: 16px;
+  border-radius: 14px;
   background: linear-gradient(180deg, rgba(17, 24, 39, 0.65), rgba(2, 6, 23, 0.65));
 }
 
 .interactive-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
-  margin-top: 12px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 @media (min-width: 720px) {
-  .interactive-grid { grid-template-columns: 1fr 1fr; }
+  .interactive-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .interactive-btn {
   border: 1px solid #334155;
   background: rgba(2, 6, 23, 0.7);
   color: #e5e7eb;
-  padding: 12px 12px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
   cursor: pointer;
   transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
   text-align: left;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .interactive-btn:hover {
@@ -2048,62 +2151,158 @@ const saveProgress = async () => {
 }
 
 .interactive-feedback {
-  margin-top: 14px;
-  padding: 12px 12px;
-  border-radius: 14px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
   border: 1px solid #334155;
   background: rgba(2, 6, 23, 0.7);
   color: #e5e7eb;
+  font-size: 0.9rem;
 }
 
-.interactive-feedback.good { border-color: rgba(34, 197, 94, 0.6); }
-.interactive-feedback.bad { border-color: rgba(239, 68, 68, 0.6); }
-.interactive-feedback.danger { border-color: rgba(245, 158, 11, 0.7); }
+.interactive-feedback.good {
+  border-color: rgba(34, 197, 94, 0.6);
+}
+
+.interactive-feedback.bad {
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.interactive-feedback.danger {
+  border-color: rgba(245, 158, 11, 0.7);
+}
 
 .quiz-card {
-  padding: 12px;
+  padding: 10px;
   border: 1px solid #1f2937;
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(2, 6, 23, 0.5);
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .quiz-question {
   font-weight: 650;
   color: #f3f4f6;
+  font-size: 0.95rem;
 }
 
-.rich-body { margin-top: 8px; display: grid; gap: 10px; }
-
-.rich-p {
+.rich-body {
+  margin-top: 6px;
   color: rgba(255, 255, 255, 0.9);
-  line-height: 1.55;
-  font-size: 0.98rem;
+  line-height: 1.5;
+  font-size: 0.95rem;
 }
 
-.rich-ul {
-  margin: 0;
-  padding-left: 18px;
+.rich-body p {
+  margin: 8px 0;
   color: rgba(255, 255, 255, 0.9);
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
-.rich-ul li { margin: 6px 0; }
+.rich-body ul,
+.rich-body ol {
+  margin: 8px 0;
+  padding-left: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
 
+.rich-body li {
+  margin: 4px 0;
+}
+
+.rich-body strong {
+  color: rgba(255, 255, 255, 1);
+  font-weight: 650;
+}
+
+.rich-body em {
+  font-style: italic;
+}
+
+.rich-body code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.rich-body pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.rich-body pre code {
+  background: none;
+  padding: 0;
+}
+
+.rich-body h1,
+.rich-body h2,
+.rich-body h3,
+.rich-body h4 {
+  color: rgba(255, 255, 255, 1);
+  margin: 12px 0 8px 0;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.rich-body h1 {
+  font-size: 1.4rem;
+}
+
+.rich-body h2 {
+  font-size: 1.2rem;
+}
+
+.rich-body h3 {
+  font-size: 1.1rem;
+}
+
+.rich-body h4 {
+  font-size: 1rem;
+}
+
+.rich-body blockquote {
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  padding-left: 12px;
+  margin: 10px 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-style: italic;
+}
+
+.rich-body a {
+  color: #60a5fa;
+  text-decoration: underline;
+}
+
+.rich-body a:hover {
+  color: #93c5fd;
+}
+
+/* Keep old custom styles for backwards compatibility */
 .rich-warn {
   border: 1px solid rgba(245, 158, 11, 0.55);
   background: rgba(245, 158, 11, 0.12);
-  padding: 12px;
-  border-radius: 14px;
+  padding: 10px;
+  border-radius: 12px;
   color: rgba(255, 255, 255, 0.95);
+  margin: 8px 0;
+  font-size: 0.9rem;
 }
 
 .rich-check {
   border: 1px solid rgba(34, 197, 94, 0.55);
   background: rgba(34, 197, 94, 0.12);
-  padding: 12px;
-  border-radius: 14px;
+  padding: 10px;
+  border-radius: 12px;
   color: rgba(255, 255, 255, 0.95);
+  margin: 8px 0;
+  font-size: 0.9rem;
 }
 
 .content-layout {
@@ -2113,7 +2312,7 @@ const saveProgress = async () => {
 .content-layout--side {
   display: grid;
   grid-template-columns: 1.35fr 0.65fr;
-  gap: 18px;
+  gap: 14px;
   align-items: start;
 }
 
@@ -2138,12 +2337,78 @@ const saveProgress = async () => {
 @media (max-width: 720px) {
   .content-layout--side {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
+
   .content-media {
     justify-content: flex-start;
   }
+
   .slide-image.side {
     max-width: 100%;
+  }
+
+  .drag-items {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .drag-item img {
+    width: 70px;
+    height: 55px;
+  }
+
+  .drag-label {
+    font-size: 0.8rem;
+  }
+
+  .dropzones {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .dropzone {
+    min-height: 130px;
+    padding: 8px;
+  }
+
+  .interactive-grid {
+    gap: 8px;
+  }
+
+  .rich-body {
+    font-size: 0.9rem;
+  }
+
+  .rich-body h1 {
+    font-size: 1.25rem;
+  }
+
+  .rich-body h2 {
+    font-size: 1.1rem;
+  }
+
+  .rich-body h3,
+  .rich-body h4 {
+    font-size: 1rem;
+  }
+
+  .progress-text {
+    font-size: 0.85rem;
+  }
+
+  .quiz-question {
+    font-size: 0.9rem;
+  }
+
+  .bigImage {
+    margin: 16px auto 0;
+    border-radius: 12px;
+  }
+
+  .bigCompare {
+    margin: 16px auto 0;
+    border-radius: 14px;
   }
 }
 
@@ -2159,58 +2424,59 @@ const saveProgress = async () => {
 .drag-items {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin: 12px 0 18px;
+  gap: 10px;
+  margin: 10px 0 14px;
 }
 
 .drag-item {
   border: 2px solid rgba(255, 255, 255, 0.18);
-  border-radius: 14px;
-  padding: 10px;
+  border-radius: 12px;
+  padding: 8px;
   background: rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: grab;
   user-select: none;
 }
 
 .drag-item.small {
-  padding: 8px;
+  padding: 6px;
 }
 
 .drag-item img {
-  width: 90px;
-  height: 70px;
+  width: 80px;
+  height: 60px;
   object-fit: contain;
 }
 
 .drag-label {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   text-align: center;
   opacity: 0.95;
+  line-height: 1.3;
 }
 
 .dropzones {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
-  margin-bottom: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
-
 .dropzone {
-  min-height: 170px;
+  min-height: 150px;
   border: 2px dashed rgba(255, 255, 255, 0.25);
-  border-radius: 16px;
-  padding: 12px;
+  border-radius: 14px;
+  padding: 10px;
   background: rgba(255, 255, 255, 0.04);
 }
 
 .dropzone-title {
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
 }
 
 .dropzone-items {
@@ -2253,7 +2519,4 @@ const saveProgress = async () => {
 .content-media:has(.bigCompare) {
   justify-content: center;
 }
-
-
-
 </style>

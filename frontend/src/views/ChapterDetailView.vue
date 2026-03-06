@@ -1511,49 +1511,56 @@ const saveProgress = async () => {
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: rgba(249, 115, 22, 0.95);
-  border: 1px solid rgba(249, 115, 22, 0.3);
+  background: rgba(249, 115, 22, 0.92);
+  border: 2px solid rgba(249, 115, 22, 0.5);
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(249, 115, 22, 0);
   z-index: 50;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .swiper-nav-prev {
-  left: 20px;
+  left: 16px;
 }
 
 .swiper-nav-next {
-  right: 20px;
+  right: 16px;
 }
 
 .swiper-nav-button:hover:not(.disabled) {
-  background: rgba(249, 115, 22, 1);
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+  background: rgb(249, 115, 22);
+  /* Keep translateY so the button doesn't jump up on hover */
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.45), 0 0 0 4px rgba(249, 115, 22, 0.15);
 }
 
 .swiper-nav-button:active:not(.disabled) {
-  transform: scale(0.95);
+  transform: translateY(-50%) scale(0.93);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .swiper-nav-button.disabled {
-  opacity: 0.3;
+  opacity: 0.22;
   cursor: not-allowed;
-  background: rgba(107, 114, 128, 0.5);
-  border-color: rgba(107, 114, 128, 0.3);
+  background: rgba(75, 85, 99, 0.6);
+  border-color: rgba(75, 85, 99, 0.3);
+  pointer-events: none;
 }
 
 .swiper-nav-button svg {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
 }
 
 .slide-card {
@@ -1769,21 +1776,32 @@ const saveProgress = async () => {
   }
 
   .swiper-nav-button {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
+    border-width: 1.5px;
+    /* Keep translateY in responsive overrides too */
+    transform: translateY(-50%);
+  }
+
+  .swiper-nav-button:hover:not(.disabled) {
+    transform: translateY(-50%) scale(1.06);
+  }
+
+  .swiper-nav-button:active:not(.disabled) {
+    transform: translateY(-50%) scale(0.92);
   }
 
   .swiper-nav-prev {
-    left: 8px;
+    left: 6px;
   }
 
   .swiper-nav-next {
-    right: 8px;
+    right: 6px;
   }
 
   .swiper-nav-button svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
 
   .chapter-header {

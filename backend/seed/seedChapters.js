@@ -1,7 +1,7 @@
 // seed/seedChapters.js
 import Chapter from '../models/chapters.js';
 import ChapterSlide from '../models/ChapterSlide.js';
-import UserProgress from '../models/UserProgress.js';
+import UserProgress from '../models/userProgress.js';
 import { chaptersSeedData } from './chaptersData.js';
 
 export const seedChapters = async () => {

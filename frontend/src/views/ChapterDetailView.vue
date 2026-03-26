@@ -250,13 +250,30 @@
                 </div>
               </div>
 
-              <!-- Gelesen -->
-              <div v-if="visitedSlides[slide.id]" class="progress-hint completed">
+              <!-- Timer: Countdown läuft -->
+              <div v-if="!slideTimerExpired[slide.id] && slideTimerRemaining[slide.id] > 0" class="reading-timer">
+                <div class="reading-timer-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
+                <div class="reading-timer-text">
+                  <span class="reading-timer-label">Bitte lies den Inhalt aufmerksam durch</span>
+                  <span class="reading-timer-countdown">{{ slideTimerRemaining[slide.id] }}s</span>
+                </div>
+                <div class="reading-timer-bar">
+                  <div class="reading-timer-bar-fill" :style="{ width: ((MIN_READING_SECONDS - (slideTimerRemaining[slide.id] || 0)) / MIN_READING_SECONDS * 100) + '%' }"></div>
+                </div>
+              </div>
+
+              <!-- Timer abgelaufen: Freigegeben -->
+              <div v-else-if="slideTimerExpired[slide.id]" class="progress-hint completed timer-done">
                 <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M13.5 4L6 11.5L2.5 8" stroke="#16a34a" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round" />
                 </svg>
-                Gelesen
+                Gelesen — du kannst weiter
               </div>
             </div>
 
@@ -315,7 +332,7 @@
 
 <script setup>
 import api from "../api";
-import { onMounted, ref, computed, watch, nextTick } from "vue";
+import { onMounted, onUnmounted, ref, computed, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
@@ -324,6 +341,9 @@ import { marked } from "marked";
 import { useChapterStore } from "../stores/chapterStore";
 import fireflyNormal from "../assets/images/firefly-normal.png";
 import fireflyWelcome from "../assets/images/firefly-welcome.png";
+
+// Mindestlesezeit in Sekunden für Content-/Summary-Slides
+const MIN_READING_SECONDS = 15;
 
 const INTERACTIVES = {
   "Interaktiv: Brand entdeckt": {
@@ -689,6 +709,59 @@ const showCelebration = ref(false);
 const confettiCanvas = ref(null);
 let swiperInstance = null;
 
+// Timer-State
+const slideTimerRemaining = ref({}); // { slideId: seconds remaining }
+const slideTimerExpired = ref({});   // { slideId: true } once timer done
+let timerInterval = null;
+
+const isContentSlide = (slide) => {
+  if (!slide) return false;
+  if (slide.type === "video") return false;
+  if (interactiveFor(slide)) return false;
+  return true;
+};
+
+const startTimerForSlide = (slideId) => {
+  clearInterval(timerInterval);
+
+  // Already expired from earlier visit -> skip
+  if (slideTimerExpired.value[slideId]) return;
+
+  // Initialize if not set
+  if (slideTimerRemaining.value[slideId] === undefined) {
+    slideTimerRemaining.value[slideId] = MIN_READING_SECONDS;
+  }
+
+  // Already at 0 (edge case)
+  if (slideTimerRemaining.value[slideId] <= 0) {
+    slideTimerExpired.value[slideId] = true;
+    updateSwiperNavigation();
+    return;
+  }
+
+  timerInterval = setInterval(() => {
+    const remaining = (slideTimerRemaining.value[slideId] ?? 0) - 1;
+    slideTimerRemaining.value[slideId] = remaining;
+
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      slideTimerExpired.value[slideId] = true;
+      visitedSlides.value[slideId] = true;
+      updateSwiperNavigation();
+    }
+  }, 1000);
+};
+
+const stopTimer = () => {
+  clearInterval(timerInterval);
+  timerInterval = null;
+};
+
+onUnmounted(() => {
+  stopTimer();
+});
+
 
 // nur erste Slide seitlich
 const isSideImageSlide = (slide, index) => {
@@ -780,10 +853,23 @@ const loadProgressForChapter = async (chapter) => {
     });
 
 
+    // Bereits besuchte Slides: Timer als abgelaufen markieren
+    chapter.slides.forEach((slide, idx) => {
+      if (idx <= startIndex && isContentSlide(slide)) {
+        slideTimerExpired.value[slide.id] = true;
+      }
+    });
+
     await nextTick();
     if (swiperInstance) {
       swiperInstance.slideTo(startIndex, 0);
       updateSwiperNavigation();
+    }
+
+    // Timer für aktuelle Slide starten falls nötig
+    const currentSlide = chapter.slides[startIndex];
+    if (currentSlide && isContentSlide(currentSlide) && !slideTimerExpired.value[currentSlide.id]) {
+      startTimerForSlide(currentSlide.id);
     }
   } catch (err) {
     console.error("Error loading chapter progress:", err);
@@ -793,6 +879,7 @@ const loadProgressForChapter = async (chapter) => {
 watch(
   () => chapterStore.currentChapter,
   async (chapter) => {
+    stopTimer();
     visitedSlides.value = {};
     videoCompleted.value = {};
     watchedDurations.value = {};
@@ -802,6 +889,8 @@ watch(
     currentTime.value = {};
     activeIndex.value = 0;
     progressRecord.value = null;
+    slideTimerRemaining.value = {};
+    slideTimerExpired.value = {};
 
     if (chapter && chapter.slides && chapter.slides.length > 0) {
       await loadProgressForChapter(chapter);
@@ -1141,10 +1230,15 @@ const onSlideChange = (swiper) => {
 
   activeIndex.value = swiper.activeIndex;
   const currentSlide = chapter.slides[swiper.activeIndex];
-  if (currentSlide && currentSlide.type !== "video" && !interactiveFor(currentSlide)) {
-    visitedSlides.value[currentSlide.id] = true;
-  }
 
+  // Content-Slide: Timer starten statt sofort als gelesen markieren
+  if (currentSlide && isContentSlide(currentSlide)) {
+    if (!slideTimerExpired.value[currentSlide.id]) {
+      startTimerForSlide(currentSlide.id);
+    } else {
+      visitedSlides.value[currentSlide.id] = true;
+    }
+  }
 
   updateSwiperNavigation();
   saveProgress();
@@ -1161,6 +1255,9 @@ const updateSwiperNavigation = () => {
     swiperInstance.allowSlideNext = false;
   }
   else if (currentSlide && interactiveFor(currentSlide) && !isInteractiveComplete(currentSlide)) {
+    swiperInstance.allowSlideNext = false;
+  }
+  else if (currentSlide && isContentSlide(currentSlide) && !slideTimerExpired.value[currentSlide.id]) {
     swiperInstance.allowSlideNext = false;
   }
   else {
@@ -1309,6 +1406,11 @@ const canNavigate = computed(() => {
   // Interaktiv: allow navigation only when correctly completed
   if (interactiveFor(currentSlide)) {
     return isInteractiveComplete(currentSlide);
+  }
+
+  // Content/Summary: Timer muss abgelaufen sein
+  if (isContentSlide(currentSlide)) {
+    return !!slideTimerExpired.value[currentSlide.id];
   }
 
   return true;
@@ -1689,6 +1791,93 @@ const saveProgress = async () => {
   flex-shrink: 0;
 }
 
+/* Reading Timer */
+.reading-timer {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(249, 115, 22, 0.08);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  border-radius: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.reading-timer-icon {
+  color: #f97316;
+  display: flex;
+  align-items: center;
+  animation: timerPulse 2s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.reading-timer-text {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.reading-timer-label {
+  font-size: 0.85rem;
+  color: #f97316;
+  font-weight: 500;
+}
+
+.reading-timer-countdown {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fb923c;
+  font-family: "Courier New", monospace;
+  min-width: 32px;
+  text-align: right;
+}
+
+.reading-timer-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(249, 115, 22, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.reading-timer-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f97316, #fb923c);
+  border-radius: 2px;
+  transition: width 1s linear;
+}
+
+/* Timer abgelaufen: Farbwechsel-Animation */
+.timer-done {
+  animation: timerDoneFlash 0.6s ease-out;
+}
+
+@keyframes timerDoneFlash {
+  0% {
+    background: rgba(249, 115, 22, 0.25);
+    border-color: rgba(249, 115, 22, 0.6);
+    transform: scale(1.03);
+  }
+  50% {
+    background: rgba(22, 163, 74, 0.2);
+    border-color: rgba(22, 163, 74, 0.5);
+    transform: scale(1.01);
+  }
+  100% {
+    background: rgba(22, 163, 74, 0.1);
+    border-color: rgba(22, 163, 74, 0.3);
+    transform: scale(1);
+  }
+}
+
 /* Fixed Bottom Bar */
 .bottom-bar {
   position: fixed;
@@ -1837,6 +2026,19 @@ const saveProgress = async () => {
 
   .slide-title {
     font-size: 1.15rem;
+  }
+
+  .reading-timer {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .reading-timer-label {
+    font-size: 0.78rem;
+  }
+
+  .reading-timer-countdown {
+    font-size: 1rem;
   }
 }
 

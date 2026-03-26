@@ -12,9 +12,19 @@ router.get('/google', googleLogin);
 router.get('/google/callback', googleCallback);
 
 // Session user
-router.get('/me', me); 
+router.get('/me', me);
 
 // Logout
 router.post('/logout', logout);
+
+// Dev-Login (nur lokal, ohne Google OAuth)
+router.get('/dev-login', async (req, res) => {
+  const { default: User } = await import('../models/User.js');
+  const user = await User.findOne({ where: { email: process.env.BOOTSTRAP_ADMIN_EMAIL } });
+  if (!user) return res.status(404).json({ message: 'Dev user not found' });
+  req.session.userId = user.id;
+  const host = req.hostname;
+  res.redirect(`http://${host}:5173/chapters`);
+});
 
 export default router;

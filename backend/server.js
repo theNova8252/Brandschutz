@@ -28,7 +28,14 @@ app.set('trust proxy', 1);
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+const allowedOrigins = [FRONTEND_URL, 'http://192.168.0.104:5173'];
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+    else cb(null, false);
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 app.use(
@@ -81,7 +88,7 @@ sequelize
 
     await seedRoles();
 
-    app.listen(PORT, () => console.log(`Server auf http://localhost:${PORT}`));
+    app.listen(PORT, '0.0.0.0', () => console.log(`Server auf http://0.0.0.0:${PORT}`));
   })
   .catch((err) => console.error('DB sync error:', err));
 

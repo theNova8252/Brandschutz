@@ -210,6 +210,7 @@ const googleLogin = () => {
   align-items: center;
   justify-content: center;
   gap: 12px;
+  min-height: 52px;
   padding: 14px 28px;
   width: 100%;
   max-width: 300px;
@@ -269,11 +270,13 @@ const googleLogin = () => {
   color: #6b7280;
   font-weight: 500;
   letter-spacing: 0.3px;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 600px) {
   .card {
-    padding: 40px 32px;
+    padding: 36px 24px;
+    border-radius: 20px;
   }
 
   .logo {
@@ -286,6 +289,21 @@ const googleLogin = () => {
 
   .title {
     font-size: 1.3rem;
+  }
+
+  .subtitle {
+    font-size: 0.98rem;
+    margin-bottom: 28px;
+  }
+
+  .google-btn {
+    max-width: none;
+    padding-inline: 18px;
+  }
+
+  .footer-text {
+    margin-top: 24px;
+    font-size: 0.8rem;
   }
 }
 

@@ -93,7 +93,7 @@
               </div>
 
               <!-- Video Text (modern) -->
-              <div class="rich-body" v-if="slide.body" v-html="parseBody(slide.body)"></div>
+              <div class="rich-body" v-if="slide.body || slide.imageUrl" v-html="renderSlideBody(slide)"></div>
 
               <!-- Video-Fortschrittsanzeige -->
               <div v-if="!videoCompleted[slide.id]" class="progress-hint warning">
@@ -117,7 +117,7 @@
 
             <!-- Interaktive Slides (Kapitel 1) -->
             <div v-else-if="interactiveFor(slide)" class="slide-content">
-              <div class="rich-body" v-if="slide.body" v-html="parseBody(slide.body)"></div>
+              <div class="rich-body" v-if="slide.body || slide.imageUrl" v-html="renderSlideBody(slide)"></div>
 
               <!-- DECISION -->
               <div v-if="interactiveFor(slide).type === 'decision'" class="interactive-box">
@@ -222,9 +222,6 @@
                 </div>
               </div>
 
-              <img v-if="slide.imageUrl" :src="slide.imageUrl" alt="Illustration" class="slide-image"
-                :class="{ bigImage: slide.title === '4.1 Fluchtwege freihalten' }" />
-
               <div v-if="interactiveState[slide.id]?.done" class="progress-hint completed" style="margin-top: 12px">
                 <svg class="progress-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M13.5 4L6 11.5L2.5 8" stroke="#16a34a" stroke-width="2" stroke-linecap="round"
@@ -236,17 +233,9 @@
 
             <!-- Normale Content-/Summary-Slide -->
             <div v-else class="slide-content">
-              <div class="content-layout"
-                :class="{ 'content-layout--side': slide.imageUrl && isSideImageSlide(slide, index) }">
+              <div class="content-layout">
                 <div class="content-text">
-                  <div class="rich-body" v-if="slide.body" v-html="parseBody(slide.body)"></div>
-                </div>
-
-                <div v-if="slide.imageUrl" class="content-media">
-                  <img :src="slide.imageUrl" alt="Illustration" class="slide-image side" :class="{
-                    side: isSideImageSlide(slide, index),
-                    bigCompare: slide.title === '4.1 Fluchtwege freihalten'
-                  }" />
+                  <div class="rich-body" v-if="slide.body || slide.imageUrl" v-html="renderSlideBody(slide)"></div>
                 </div>
               </div>
 
@@ -344,6 +333,7 @@ import fireflyWelcome from "../assets/images/firefly-welcome.png";
 
 // Mindestlesezeit in Sekunden für Content-/Summary-Slides
 const MIN_READING_SECONDS = 15;
+const MOBILE_BREAKPOINT = 720;
 
 const INTERACTIVES = {
   "Interaktiv: Brand entdeckt": {
@@ -706,6 +696,7 @@ const isMuted = ref({});
 const currentTime = ref({});
 const progressRecord = ref(null);
 const showCelebration = ref(false);
+const isMobileViewport = ref(false);
 const confettiCanvas = ref(null);
 let swiperInstance = null;
 
@@ -760,6 +751,9 @@ const stopTimer = () => {
 
 onUnmounted(() => {
   stopTimer();
+  if (typeof window !== "undefined") {
+    window.removeEventListener("resize", updateViewportMode);
+  }
 });
 
 
@@ -793,6 +787,8 @@ const isSideImageSlide = (slide, index) => {
 
 // Kapitel laden
 onMounted(async () => {
+  updateViewportMode();
+  window.addEventListener("resize", updateViewportMode);
   await chapterStore.fetchChapter(route.params.slug);
 
   const chapter = chapterStore.currentChapter;
@@ -904,6 +900,52 @@ watch(
 const parseBody = (text) => {
   if (!text) return "";
   return marked(text, { breaks: true });
+};
+
+const updateViewportMode = () => {
+  if (typeof window === "undefined") return;
+  isMobileViewport.value = window.innerWidth <= MOBILE_BREAKPOINT;
+};
+
+const escapeHtmlAttribute = (value) =>
+  String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+
+const inlineImageStyle = (slide) => {
+  const isWideImage = slide?.title === "4.1 Fluchtwege freihalten";
+  const width = isWideImage ? "min(100%, 820px)" : "min(100%, 320px)";
+  const marginTop = isWideImage ? "20px" : "16px";
+  const imageMargin = isMobileViewport.value
+    ? `${marginTop} auto 16px 0`
+    : `${marginTop} 0 16px auto`;
+
+  return [
+    "display:block",
+    `width:${width}`,
+    "max-width:100%",
+    "height:auto",
+    `margin:${imageMargin}`,
+    "border-radius:16px",
+    "object-fit:contain",
+    "box-shadow:0 10px 28px rgba(0, 0, 0, 0.45)",
+  ].join("; ");
+};
+
+const renderSlideBody = (slide) => {
+  const bodyHtml = parseBody(slide?.body);
+
+  if (!slide?.imageUrl) {
+    return bodyHtml;
+  }
+
+  const imageHtml = `<img src="${escapeHtmlAttribute(slide.imageUrl)}" alt="${escapeHtmlAttribute(
+    slide.title || "Illustration"
+  )}" style="${inlineImageStyle(slide)}">`;
+
+  return `${bodyHtml}${imageHtml}`;
 };
 
 const interactiveState = ref({});
@@ -1544,7 +1586,8 @@ const saveProgress = async () => {
 }
 
 .back-btn {
-  padding: 7px 12px;
+  min-height: 44px;
+  padding: 10px 16px;
   border-radius: 999px;
   border: 1px solid #374151;
   background: #020617;
@@ -1718,6 +1761,7 @@ const saveProgress = async () => {
 .custom-controls {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   padding: 8px 12px;
   background: rgba(0, 0, 0, 0.8);
@@ -1730,11 +1774,14 @@ const saveProgress = async () => {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform 0.2s;
+  border-radius: 999px;
 }
 
 .play-btn:hover,
@@ -1743,13 +1790,13 @@ const saveProgress = async () => {
 }
 
 .play-btn {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
 }
 
 .volume-btn {
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   margin-left: auto;
 }
 
@@ -1764,6 +1811,7 @@ const saveProgress = async () => {
 .progress-hint {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
   padding: 8px 12px;
@@ -1933,7 +1981,7 @@ const saveProgress = async () => {
 
 @media (max-width: 768px) {
   .page {
-    padding: 12px 8px 110px;
+    padding: 12px 8px 190px;
   }
 
   .bottom-bar {
@@ -1965,27 +2013,28 @@ const saveProgress = async () => {
   }
 
   .swiper-nav-button {
-    width: 44px;
-    height: 44px;
+    top: auto;
+    bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+    width: 48px;
+    height: 48px;
     border-width: 1.5px;
-    /* Keep translateY in responsive overrides too */
-    transform: translateY(-50%);
+    transform: none;
   }
 
   .swiper-nav-button:hover:not(.disabled) {
-    transform: translateY(-50%) scale(1.06);
+    transform: scale(1.06);
   }
 
   .swiper-nav-button:active:not(.disabled) {
-    transform: translateY(-50%) scale(0.92);
+    transform: scale(0.92);
   }
 
   .swiper-nav-prev {
-    left: 6px;
+    left: 12px;
   }
 
   .swiper-nav-next {
-    right: 6px;
+    right: 12px;
   }
 
   .swiper-nav-button svg {
@@ -2033,6 +2082,12 @@ const saveProgress = async () => {
     gap: 8px;
   }
 
+  .reading-timer-text {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .reading-timer-label {
     font-size: 0.78rem;
   }
@@ -2043,7 +2098,8 @@ const saveProgress = async () => {
 }
 
 .finish-btn {
-  padding: 10px 24px;
+  min-height: 48px;
+  padding: 12px 24px;
   border-radius: 8px;
   background: #16a34a;
   color: white;
@@ -2064,7 +2120,8 @@ const saveProgress = async () => {
 }
 
 .finish-hint-compact {
-  padding: 10px 16px;
+  min-height: 48px;
+  padding: 12px 16px;
   border-radius: 8px;
   background: rgba(107, 114, 128, 0.15);
   border: 1px solid rgba(107, 114, 128, 0.25);
@@ -2185,6 +2242,7 @@ const saveProgress = async () => {
 }
 
 .celebration-btn {
+  min-height: 48px;
   padding: 14px 32px;
   border-radius: 12px;
   background: linear-gradient(135deg, #f97316, #ea580c);
@@ -2236,6 +2294,7 @@ const saveProgress = async () => {
   gap: 10px;
   z-index: 100;
   max-width: 280px;
+  pointer-events: none;
 }
 
 .firefly-image {
@@ -2303,9 +2362,9 @@ const saveProgress = async () => {
 
 @media (max-width: 768px) {
   .firefly-companion {
-    bottom: 12px;
+    bottom: calc(152px + env(safe-area-inset-bottom, 0px));
     right: 12px;
-    max-width: 200px;
+    max-width: 160px;
     gap: 8px;
   }
 
@@ -2317,7 +2376,7 @@ const saveProgress = async () => {
   .firefly-speech-bubble {
     font-size: 0.75rem;
     padding: 8px 12px;
-    max-width: 180px;
+    max-width: 160px;
     border-radius: 12px;
   }
 
@@ -2355,7 +2414,9 @@ const saveProgress = async () => {
   border: 1px solid #334155;
   background: rgba(2, 6, 23, 0.7);
   color: #e5e7eb;
-  padding: 10px 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
   border-radius: 12px;
   cursor: pointer;
   transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
@@ -2411,6 +2472,7 @@ const saveProgress = async () => {
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.5;
   font-size: 0.95rem;
+  overflow-wrap: anywhere;
 }
 
 .rich-body p {
@@ -2504,6 +2566,12 @@ const saveProgress = async () => {
   color: #93c5fd;
 }
 
+.rich-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 /* Keep old custom styles for backwards compatibility */
 .rich-warn {
   border: 1px solid rgba(245, 158, 11, 0.55);
@@ -2592,6 +2660,10 @@ const saveProgress = async () => {
     padding: 8px;
   }
 
+  .drag-actions {
+    flex-direction: column;
+  }
+
   .interactive-grid {
     gap: 8px;
   }
@@ -2659,6 +2731,7 @@ const saveProgress = async () => {
   gap: 6px;
   cursor: grab;
   user-select: none;
+  min-height: 128px;
 }
 
 .drag-item.small {
@@ -2707,6 +2780,7 @@ const saveProgress = async () => {
 
 .drag-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 6px;
 }

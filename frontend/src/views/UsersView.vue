@@ -1,52 +1,53 @@
 <template>
   <div class="page">
-    <!-- Header -->
     <div class="header">
       <div>
         <h1 class="title">Benutzerverwaltung</h1>
-        <p class="subtitle">Admin-Übersicht über Benutzer, Rollen und Status.</p>
+        <p class="subtitle">Admin-Uebersicht ueber Benutzer, Rollen und Status.</p>
       </div>
 
       <div class="actions">
-        <button class="btn" @click="downloadCsv">⬇ CSV</button>
-        <button class="btn btn-ghost" @click="refresh">Neu laden</button>
+        <button type="button" class="btn" @click="downloadCsv">CSV</button>
+        <button type="button" class="btn btn-ghost" @click="refresh">Neu laden</button>
       </div>
     </div>
 
-    <!-- Toolbar -->
     <div class="toolbar">
       <div class="search">
         <span class="search-icon">Suchen</span>
         <input
           v-model="filter"
           class="search-input"
-          placeholder="Suchen nach Name, Email, Rolle oder Status…"
+          placeholder="Suchen nach Name, Email, Rolle oder Status..."
         />
       </div>
 
       <div class="sort">
         <span class="sort-label">Sortieren:</span>
-        <button class="chip" :class="{ active: sortBy === 'name' }" @click="setSort('name')">
+        <button type="button" class="chip" :class="{ active: sortBy === 'name' }" @click="setSort('name')">
           Name <span class="arrow">{{ sortArrow('name') }}</span>
         </button>
-        <button class="chip" :class="{ active: sortBy === 'email' }" @click="setSort('email')">
+        <button type="button" class="chip" :class="{ active: sortBy === 'email' }" @click="setSort('email')">
           Email <span class="arrow">{{ sortArrow('email') }}</span>
         </button>
-        <button class="chip" :class="{ active: sortBy === 'status' }" @click="setSort('status')">
+        <button type="button" class="chip" :class="{ active: sortBy === 'status' }" @click="setSort('status')">
           Status <span class="arrow">{{ sortArrow('status') }}</span>
         </button>
-        <button class="chip" :class="{ active: sortBy === 'createdAt' }" @click="setSort('createdAt')">
+        <button
+          type="button"
+          class="chip"
+          :class="{ active: sortBy === 'createdAt' }"
+          @click="setSort('createdAt')"
+        >
           Erstellt <span class="arrow">{{ sortArrow('createdAt') }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Error -->
     <p v-if="store.error" class="info error">
       {{ store.error }}
     </p>
 
-    <!-- Table Card -->
     <div class="card">
       <div class="card-head">
         <div class="card-title">
@@ -60,7 +61,7 @@
 
       <div v-if="store.loading" class="state">
         <div class="spinner"></div>
-        <p>Lade Benutzer…</p>
+        <p>Lade Benutzer...</p>
       </div>
 
       <div v-else-if="!filtered.length" class="state">
@@ -68,61 +69,108 @@
         <p class="state-sub">Passe den Filter an oder lade neu.</p>
       </div>
 
-      <div v-else class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th @click="setSort('name')">Name</th>
-              <th @click="setSort('email')">Email</th>
-              <th>Rollen</th>
-              <th @click="setSort('status')">Status</th>
-              <th @click="setSort('createdAt')">Erstellt</th>
-            </tr>
-          </thead>
+      <div v-else>
+        <div class="table-wrap desktop-table">
+          <table class="table">
+            <thead>
+              <tr>
+                <th @click="setSort('name')">Name</th>
+                <th @click="setSort('email')">Email</th>
+                <th>Rollen</th>
+                <th @click="setSort('status')">Status</th>
+                <th @click="setSort('createdAt')">Erstellt</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            <tr v-for="u in filtered" :key="u.id">
-              <td class="cell-strong">
-                <div class="user">
-                  <img class="avatar" :src="avatarUrl(u)" alt="Avatar" />
-                  <div class="user-meta">
-                    <div class="user-name">{{ u.name || '—' }}</div>
-                    <div class="user-id">ID: {{ u.id }}</div>
+            <tbody>
+              <tr v-for="u in filtered" :key="u.id">
+                <td class="cell-strong">
+                  <div class="user">
+                    <img class="avatar" :src="avatarUrl(u)" alt="Avatar" />
+                    <div class="user-meta">
+                      <div class="user-name">{{ u.name || '-' }}</div>
+                      <div class="user-id">ID: {{ u.id }}</div>
+                    </div>
                   </div>
+                </td>
+
+                <td class="mono">{{ u.email }}</td>
+
+                <td>
+                  <div class="roles">
+                    <span
+                      v-for="r in u.roles"
+                      :key="r"
+                      class="role-pill"
+                      :class="{ admin: r === 'ADMIN' }"
+                    >
+                      {{ r }}
+                    </span>
+                    <span v-if="!u.roles?.length" class="role-pill muted">-</span>
+                  </div>
+                </td>
+
+                <td>
+                  <span class="status" :class="statusClass(u.status)">
+                    <span class="status-dot"></span>
+                    {{ u.status || 'Nicht begonnen' }}
+                  </span>
+                </td>
+
+                <td class="mono">{{ formatDate(u.createdAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mobile-users">
+          <article v-for="u in filtered" :key="`mobile-${u.id}`" class="mobile-user-card">
+            <div class="mobile-user-head">
+              <div class="user">
+                <img class="avatar" :src="avatarUrl(u)" alt="Avatar" />
+                <div class="user-meta">
+                  <div class="user-name">{{ u.name || '-' }}</div>
+                  <div class="user-id">ID: {{ u.id }}</div>
                 </div>
-              </td>
+              </div>
 
-              <td class="mono">{{ u.email }}</td>
+              <span class="status" :class="statusClass(u.status)">
+                <span class="status-dot"></span>
+                {{ u.status || 'Nicht begonnen' }}
+              </span>
+            </div>
 
-              <td>
+            <div class="mobile-user-grid">
+              <div class="mobile-user-row">
+                <span class="mobile-label">Email</span>
+                <span class="mono mobile-value">{{ u.email }}</span>
+              </div>
+
+              <div class="mobile-user-row">
+                <span class="mobile-label">Rollen</span>
                 <div class="roles">
                   <span
                     v-for="r in u.roles"
-                    :key="r"
+                    :key="`${u.id}-${r}`"
                     class="role-pill"
                     :class="{ admin: r === 'ADMIN' }"
                   >
                     {{ r }}
                   </span>
-                  <span v-if="!u.roles?.length" class="role-pill muted">—</span>
+                  <span v-if="!u.roles?.length" class="role-pill muted">-</span>
                 </div>
-              </td>
+              </div>
 
-              <td>
-                <span class="status" :class="statusClass(u.status)">
-                  <span class="status-dot"></span>
-                  {{ u.status || 'Nicht begonnen' }}
-                </span>
-              </td>
-
-              <td class="mono">{{ formatDate(u.createdAt) }}</td>
-            </tr>
-          </tbody>
-        </table>
+              <div class="mobile-user-row">
+                <span class="mobile-label">Erstellt</span>
+                <span class="mono mobile-value">{{ formatDate(u.createdAt) }}</span>
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
     </div>
 
-    <!-- Role Management -->
     <div class="card">
       <div class="card-head">
         <div class="card-title">
@@ -138,12 +186,12 @@
         <textarea
           v-model="emailsText"
           class="textarea"
-          placeholder="max.mustermann@htlwienwest.at&#10;…"
+          placeholder="max.mustermann@htlwienwest.at&#10;..."
         ></textarea>
 
         <div class="role-actions">
-          <button class="btn btn-green" @click="makeAdmin">ADMIN vergeben</button>
-          <button class="btn btn-red" @click="removeAdmin">ADMIN entfernen</button>
+          <button type="button" class="btn btn-green" @click="makeAdmin">ADMIN vergeben</button>
+          <button type="button" class="btn btn-red" @click="removeAdmin">ADMIN entfernen</button>
         </div>
       </div>
     </div>
@@ -197,8 +245,8 @@ const setSort = (key) => {
 };
 
 const sortArrow = (key) => {
-  if (sortBy.value !== key) return "↕";
-  return sortDir.value === "asc" ? "↑" : "↓";
+  if (sortBy.value !== key) return "<>";
+  return sortDir.value === "asc" ? "^" : "v";
 };
 
 const parseEmails = () =>
@@ -236,7 +284,7 @@ const downloadCsv = () => {
   URL.revokeObjectURL(url);
 };
 
-const formatDate = (d) => (d ? new Date(d).toLocaleString() : "—");
+const formatDate = (d) => (d ? new Date(d).toLocaleString() : "-");
 
 const statusClass = (status) => {
   if (status === "Abgeschlossen") return "done";
@@ -244,7 +292,6 @@ const statusClass = (status) => {
   return "none";
 };
 
-// simple avatar (wie bei ChaptersView: dicebear)
 const avatarUrl = (u) => {
   const seed = encodeURIComponent(u?.name || u?.email || "User");
   return `https://api.dicebear.com/9.x/initials/svg?seed=${seed}`;
@@ -259,7 +306,6 @@ const avatarUrl = (u) => {
   color: #f8fafc;
 }
 
-/* Header */
 .header {
   max-width: 1200px;
   margin: 0 auto 18px;
@@ -271,9 +317,9 @@ const avatarUrl = (u) => {
 }
 
 .title {
+  margin: 0;
   font-size: 2.4rem;
   font-weight: 800;
-  margin: 0;
   letter-spacing: -0.02em;
   background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
   -webkit-background-clip: text;
@@ -289,22 +335,23 @@ const avatarUrl = (u) => {
 .actions {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
-/* Toolbar */
 .toolbar {
   max-width: 1200px;
-  margin: 18px auto 18px;
+  margin: 18px auto;
   display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
 .search {
   flex: 1;
   min-width: 260px;
+  min-height: 52px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -316,7 +363,9 @@ const avatarUrl = (u) => {
 }
 
 .search-icon {
-  opacity: 0.85;
+  color: #cbd5e1;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -341,6 +390,7 @@ const avatarUrl = (u) => {
 }
 
 .chip {
+  min-height: 44px;
   border: 1px solid rgba(148, 163, 184, 0.18);
   background: rgba(30, 41, 59, 0.35);
   color: #e5e7eb;
@@ -367,15 +417,10 @@ const avatarUrl = (u) => {
   margin-left: 6px;
 }
 
-/* Cards */
 .card {
   max-width: 1200px;
   margin: 0 auto 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(30, 41, 59, 0.4) 0%,
-    rgba(15, 23, 42, 0.65) 100%
-  );
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.65) 100%);
   border-radius: 22px;
   border: 1px solid rgba(148, 163, 184, 0.14);
   backdrop-filter: blur(12px);
@@ -388,6 +433,7 @@ const avatarUrl = (u) => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 }
 
@@ -416,6 +462,7 @@ const avatarUrl = (u) => {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .meta-pill {
@@ -433,9 +480,8 @@ const avatarUrl = (u) => {
   font-size: 0.9rem;
 }
 
-/* Table */
 .table-wrap {
-  overflow: auto;
+  overflow-x: auto;
 }
 
 .table {
@@ -446,7 +492,7 @@ const avatarUrl = (u) => {
 
 th,
 td {
-  padding: 14px 14px;
+  padding: 14px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
   text-align: left;
   vertical-align: middle;
@@ -473,38 +519,43 @@ tbody tr:hover {
 }
 
 .mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
   color: #e5e7eb;
   font-size: 0.92rem;
 }
 
-/* User cell */
 .user {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
   border: 2px solid rgba(96, 165, 250, 0.55);
   background: #020617;
+  flex-shrink: 0;
+}
+
+.user-meta {
+  min-width: 0;
 }
 
 .user-name {
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .user-id {
+  margin-top: 2px;
   font-size: 0.8rem;
   color: #94a3b8;
-  margin-top: 2px;
 }
 
-/* Roles */
 .roles {
   display: flex;
   gap: 8px;
@@ -531,11 +582,11 @@ tbody tr:hover {
   opacity: 0.7;
 }
 
-/* Status */
 .status {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-height: 40px;
   padding: 7px 12px;
   border-radius: 999px;
   font-weight: 900;
@@ -570,11 +621,49 @@ tbody tr:hover {
   border-color: rgba(34, 197, 94, 0.25);
 }
 
-/* Role management */
+.mobile-users {
+  display: none;
+}
+
+.mobile-user-card {
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  padding: 16px 18px;
+  background: rgba(2, 6, 23, 0.2);
+}
+
+.mobile-user-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.mobile-user-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.mobile-user-row {
+  display: grid;
+  gap: 6px;
+}
+
+.mobile-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.mobile-value {
+  overflow-wrap: anywhere;
+}
+
 .role-grid {
   padding: 16px 18px 18px;
   display: grid;
-  grid-template-columns: 1fr;
   gap: 12px;
 }
 
@@ -588,17 +677,18 @@ tbody tr:hover {
   background: rgba(2, 6, 23, 0.35);
   color: #e5e7eb;
   outline: none;
+  font-size: 16px;
 }
 
 .role-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 10px;
   flex-wrap: wrap;
-  justify-content: flex-end;
 }
 
-/* Buttons */
 .btn {
+  min-height: 46px;
   border: none;
   cursor: pointer;
   padding: 10px 14px;
@@ -616,7 +706,7 @@ tbody tr:hover {
 }
 
 .btn:active {
-  transform: translateY(0px);
+  transform: translateY(0);
 }
 
 .btn-ghost {
@@ -636,7 +726,6 @@ tbody tr:hover {
   box-shadow: 0 10px 26px rgba(239, 68, 68, 0.18);
 }
 
-/* Info / States */
 .info {
   max-width: 1200px;
   margin: 10px auto 18px;
@@ -676,6 +765,82 @@ tbody tr:hover {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 820px) {
+  .page {
+    padding: 28px 16px 40px;
+  }
+
+  .title {
+    font-size: clamp(1.9rem, 7vw, 2.3rem);
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+  }
+
+  .actions,
+  .toolbar,
+  .sort,
+  .role-actions {
+    width: 100%;
+  }
+
+  .actions .btn,
+  .role-actions .btn {
+    flex: 1 1 100%;
+  }
+
+  .search {
+    min-width: 100%;
+  }
+
+  .sort-label {
+    width: 100%;
+  }
+
+  .chip {
+    flex: 1 1 calc(50% - 10px);
+    justify-content: center;
+  }
+
+  .desktop-table {
+    display: none;
+  }
+
+  .mobile-users {
+    display: grid;
+  }
+
+  .mobile-user-card:first-child {
+    border-top: none;
+  }
+
+  .mobile-user-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .status {
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .card-head,
+  .card-meta {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .chip {
+    flex-basis: 100%;
+  }
+
+  .mobile-user-card {
+    padding: 14px 16px;
   }
 }
 </style>

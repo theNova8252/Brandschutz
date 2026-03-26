@@ -165,11 +165,11 @@ const chaptersWithProgress = computed(() => {
     </div>
     <h1 class="page-title">Schulung Brandschutzverordnung</h1>
 
-    <p v-if="chapterStore.loading || loadingProgress" class="info">
+    <p v-if="chapterStore.listLoading || loadingProgress" class="info">
       Lade Kapitel und Fortschritt…
     </p>
-    <p v-else-if="chapterStore.error || progressError" class="info error">
-      {{ chapterStore.error || progressError }}
+    <p v-else-if="chapterStore.listError || progressError" class="info error">
+      {{ chapterStore.listError || progressError }}
     </p>
 
     <div v-else class="chapters-grid">
@@ -227,7 +227,7 @@ const chaptersWithProgress = computed(() => {
 .page {
   min-height: 100vh;
   background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
-  padding: 64px 24px;
+  padding: 64px 24px 120px;
   color: #f8fafc;
   position: relative;
 }
@@ -296,6 +296,7 @@ const chaptersWithProgress = computed(() => {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
+  min-height: 100%;
 }
 
 .chapter-card::before {
@@ -445,8 +446,8 @@ const chaptersWithProgress = computed(() => {
 }
 
 .user-avatar {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 999px;
   border: 2px solid #60a5fa;
   background: #020617;
@@ -462,6 +463,7 @@ const chaptersWithProgress = computed(() => {
   border: 1px solid rgba(148, 163, 184, 0.4);
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.8);
   min-width: 190px;
+  max-width: min(280px, calc(100vw - 32px));
 }
 
 .user-name {
@@ -473,7 +475,8 @@ const chaptersWithProgress = computed(() => {
 
 .signout-btn {
   width: 100%;
-  padding: 8px 10px;
+  min-height: 44px;
+  padding: 10px 12px;
   border-radius: 999px;
   border: none;
   font-size: 0.85rem;
@@ -506,6 +509,7 @@ const chaptersWithProgress = computed(() => {
 }
 
 .certificate-box button {
+  min-height: 48px;
   padding: 14px 24px;
   font-size: 1.1rem;
   background: #22c55e;
@@ -513,5 +517,83 @@ const chaptersWithProgress = computed(() => {
   border-radius: 12px;
   border: none;
   cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding: 28px 16px 120px;
+  }
+
+  .page-logo {
+    position: static;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .logo {
+    height: 72px;
+  }
+
+  .page-title {
+    font-size: clamp(1.9rem, 7vw, 2.4rem);
+    margin-bottom: 20px;
+  }
+
+  .info {
+    margin-top: 20px;
+    font-size: 1rem;
+  }
+
+  .chapters-grid {
+    margin-top: 24px;
+    gap: 18px;
+  }
+
+  .chapter-card {
+    border-radius: 20px;
+  }
+
+  .chapter-number {
+    top: 14px;
+    right: 16px;
+    font-size: 4.5rem;
+  }
+
+  .chapter-content {
+    min-height: auto;
+    padding: 24px 18px 20px;
+  }
+
+  .chapter-title {
+    font-size: 1.25rem;
+  }
+
+  .chapter-status {
+    white-space: normal;
+  }
+
+  .chapter-footer {
+    padding-top: 14px;
+  }
+
+  .chapter-action {
+    line-height: 1.3;
+  }
+
+  .certificate-box {
+    margin-top: 28px;
+  }
+
+  .certificate-box button {
+    width: 100%;
+    max-width: 420px;
+    font-size: 1rem;
+  }
+
+  .user-menu {
+    bottom: 16px;
+    right: 16px;
+  }
 }
 </style>

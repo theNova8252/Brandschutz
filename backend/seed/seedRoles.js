@@ -2,6 +2,21 @@ import Role from '../models/Role.js';
 import UserRole from '../models/UserRole.js';
 import User from '../models/User.js';
 
+function parseBootstrapAdminEmails() {
+  const envList = (process.env.BOOTSTRAP_ADMIN_EMAILS || '').trim();
+  const legacySingle = (process.env.BOOTSTRAP_ADMIN_EMAIL || '').trim();
+
+  const source = envList || legacySingle;
+  if (!source) return [];
+
+  return [...new Set(
+    source
+      .split(',')
+      .map(email => email.trim().toLowerCase())
+      .filter(Boolean),
+  )];
+}
+
 export async function seedRoles() {
   // Rollen sicherstellen
   const [userRole] = await Role.findOrCreate({ where: { name: 'USER' } });
@@ -22,27 +37,22 @@ export async function seedRoles() {
     await Role.destroy({ where: { id: specialRole.id } });
   }
 
-  const bootstrapEmail = process.env.BOOTSTRAP_ADMIN_EMAIL.trim().toLowerCase();
-  if (!bootstrapEmail) return;
+  const bootstrapAdminEmails = parseBootstrapAdminEmails();
+  if (!bootstrapAdminEmails.length) return;
 
-  const anyAdminLink = await UserRole.findOne({
-    where: { role_id: adminRole.id },
-  });
-  if (anyAdminLink) return;
+  for (const bootstrapEmail of bootstrapAdminEmails) {
+    const [user] = await User.findOrCreate({
+      where: { email: bootstrapEmail },
+      defaults: {
+        name: bootstrapEmail.split('@')[0],
+        isNewUser: false,
+      },
+    });
 
-  const user = await User.findOne({
-    where: { email: bootstrapEmail },
-  });
-  if (!user) {
-    console.warn(
-      `[seedRoles] BOOTSTRAP_ADMIN_EMAIL gesetzt (${bootstrapEmail}), aber User existiert noch nicht.`,
-    );
-    return;
+    await UserRole.findOrCreate({
+      where: { user_id: user.id, role_id: adminRole.id },
+    });
+
+    console.log(`[seedRoles] Ensured ADMIN for ${bootstrapEmail}`);
   }
-
-  await UserRole.findOrCreate({
-    where: { user_id: user.id, role_id: adminRole.id },
-  });
-
-  console.log(`[seedRoles] Bootstrapped ADMIN for ${bootstrapEmail}`);
 }

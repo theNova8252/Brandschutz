@@ -23,11 +23,16 @@ onMounted(() => {
 
 <template>
   <nav v-if="showNav" class="nav" :class="{ 'nav--open': mobileNavOpen }">
-    <div class="nav-bar">
+    <div class="nav-inner">
       <router-link to="/chapters" class="brand">
         <img src="./assets/images/htlWW_Logo.png" alt="HTL Wien West Logo" class="logo" />
         <span>HTL Wien West</span>
       </router-link>
+
+      <div class="nav-links" :class="{ 'nav-links--open': mobileNavOpen }">
+        <router-link to="/chapters">Kapitel</router-link>
+        <router-link v-if="userStore.isAdmin" to="/users">Benutzerverwaltung</router-link>
+      </div>
 
       <button
         type="button"
@@ -41,11 +46,6 @@ onMounted(() => {
         <span></span>
       </button>
     </div>
-
-    <div class="nav-links" :class="{ 'nav-links--open': mobileNavOpen }">
-      <router-link to="/chapters">Kapitel</router-link>
-      <router-link v-if="userStore.isAdmin" to="/users">Benutzerverwaltung</router-link>
-    </div>
   </nav>
 
   <router-view />
@@ -56,18 +56,17 @@ onMounted(() => {
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 12px 18px;
+  padding: 0 24px;
   background: rgba(2, 6, 23, 0.84);
   border-bottom: 1px solid rgba(148, 163, 184, 0.18);
   backdrop-filter: blur(16px);
 }
 
-.nav-bar {
+.nav-inner {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
 }
 
@@ -75,19 +74,17 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  min-height: 44px;
+  min-height: 56px;
   padding: 6px 0;
   font-weight: 800;
   color: #f8fafc;
+  margin-right: auto;
 }
 
 .nav-links {
-  max-width: 1200px;
-  margin: 8px auto 0;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
+  gap: 6px;
 }
 
 .nav-links a {
@@ -103,8 +100,7 @@ onMounted(() => {
   line-height: 1.2;
 }
 
-.nav-links a.router-link-active,
-.brand.router-link-active {
+.nav-links a.router-link-active {
   border-color: rgba(96, 165, 250, 0.55);
   background: rgba(96, 165, 250, 0.12);
 }
@@ -154,13 +150,18 @@ onMounted(() => {
 
 @media (max-width: 720px) {
   .nav {
-    padding: 10px 14px;
+    padding: 0 14px;
+  }
+
+  .nav-inner {
+    flex-wrap: wrap;
   }
 
   .brand {
     min-width: 0;
     gap: 10px;
-    padding: 4px 0;
+    min-height: 48px;
+    margin-right: auto;
   }
 
   .brand span {
@@ -174,10 +175,11 @@ onMounted(() => {
 
   .nav-links {
     display: none;
-    margin-top: 12px;
+    flex-basis: 100%;
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
+    padding-bottom: 12px;
   }
 
   .nav-links--open {

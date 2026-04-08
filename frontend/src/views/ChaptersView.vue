@@ -203,6 +203,12 @@ const chaptersWithProgress = computed(() => {
       </div>
     </div>
 
+    <!-- Credits -->
+    <div class="credits">
+      <p>Erstellt von <span class="credits-names">Bojan Stankov</span> <span class="credits-amp">&</span> <span class="credits-names">Kevin Can Deimel</span></p>
+      <p class="credits-support">mit Unterstützung von Prof. Richard Wurzer <span class="credits-amp">&</span> Prof. Niel Widy</p>
+    </div>
+
 <div v-if="allCompleted" class="certificate-box">
   <button @click="downloadCertificate">
     📄 Zertifikat herunterladen
@@ -499,6 +505,34 @@ const chaptersWithProgress = computed(() => {
 .lock-icon {
   font-size: 1.1rem;
   margin-left: 6px;
+}
+
+.credits {
+  margin-top: 48px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+}
+
+.credits:hover {
+  opacity: 0.85;
+}
+
+.credits-names {
+  font-weight: 600;
+  color: #f97316;
+}
+
+.credits-amp {
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.credits-support {
+  font-size: 0.72rem;
+  margin-top: 2px;
 }
 
 .certificate-box {

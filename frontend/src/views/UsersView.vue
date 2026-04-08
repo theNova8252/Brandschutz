@@ -3,7 +3,7 @@
     <div class="header">
       <div>
         <h1 class="title">Benutzerverwaltung</h1>
-        <p class="subtitle">Admin-Uebersicht ueber Benutzer, Rollen und Status.</p>
+        <p class="subtitle">Admin-Übersicht über Benutzer, Rollen und Status.</p>
       </div>
 
       <div class="actions">

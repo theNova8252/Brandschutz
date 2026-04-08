@@ -292,7 +292,9 @@
   </div>
 
   <div v-else class="page page-center">
-    <p v-if="chapterStore.chapterLoading">Kapitel wird geladen …</p>
+    <div v-if="chapterStore.chapterLoading" class="chapter-loading">
+      <div class="chapter-spinner"></div>
+    </div>
     <p v-else-if="chapterStore.chapterError" class="error-box">
       {{ chapterStore.chapterError }}
       <br />
@@ -2780,5 +2782,27 @@ const saveProgress = async () => {
 
 .content-media:has(.bigCompare) {
   justify-content: center;
+}
+
+.chapter-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 0;
+}
+
+.chapter-spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 4px solid #f3f4f6;
+  border-top-color: #f97316;
+  animation: chapter-spin 0.8s linear infinite;
+}
+
+@keyframes chapter-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

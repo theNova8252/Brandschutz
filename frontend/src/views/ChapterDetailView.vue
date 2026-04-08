@@ -1458,7 +1458,14 @@ const canNavigate = computed(() => {
   return true;
 });
 
+const isLastSlide = computed(() => {
+  const chapter = chapterStore.currentChapter;
+  if (!chapter || !chapter.slides) return true;
+  return activeIndex.value >= chapter.slides.length - 1;
+});
+
 const canGoNext = computed(() => {
+  if (isLastSlide.value) return false;
   return canNavigate.value;
 });
 
@@ -1565,9 +1572,9 @@ const saveProgress = async () => {
 <style scoped>
 .page {
   min-height: 100vh;
-  padding: 16px 12px 100px;
-  background: #020617;
-  color: #e5e7eb;
+  padding: 24px 16px 100px;
+  background: var(--bg);
+  color: var(--text);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1586,24 +1593,25 @@ const saveProgress = async () => {
 }
 
 .back-btn {
-  min-height: 44px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: 1px solid #374151;
-  background: #020617;
-  color: #e5e7eb;
+  min-height: 40px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border-mid);
+  background: var(--bg-card);
+  color: var(--text-secondary);
   font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s;
+  transition: all 0.15s ease;
 }
 
 .back-btn:hover {
-  background: #111827;
-  border-color: #4b5563;
-  transform: translateY(-1px);
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .back-btn.secondary {
@@ -1618,20 +1626,22 @@ const saveProgress = async () => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .chapter-meta h1 {
   margin: 2px 0 0;
   font-size: 1.5rem;
   line-height: 1.3;
+  color: var(--text);
 }
 
 .chapter-label {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #9ca3af;
+  color: #f97316;
+  font-weight: 600;
   margin: 0;
 }
 
@@ -1656,18 +1666,18 @@ const saveProgress = async () => {
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(249, 115, 22, 0.92);
-  border: 2px solid rgba(249, 115, 22, 0.5);
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #f97316;
+  border: none;
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(249, 115, 22, 0);
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
   z-index: 50;
   outline: none;
   -webkit-tap-highlight-color: transparent;
@@ -1683,37 +1693,35 @@ const saveProgress = async () => {
 }
 
 .swiper-nav-button:hover:not(.disabled) {
-  background: rgb(249, 115, 22);
-  /* Keep translateY so the button doesn't jump up on hover */
-  transform: translateY(-50%) scale(1.08);
-  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.45), 0 0 0 4px rgba(249, 115, 22, 0.15);
+  background: #ea580c;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.4);
 }
 
 .swiper-nav-button:active:not(.disabled) {
-  transform: translateY(-50%) scale(0.93);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transform: translateY(-50%) scale(0.95);
 }
 
 .swiper-nav-button.disabled {
-  opacity: 0.22;
+  opacity: 0.3;
   cursor: not-allowed;
-  background: rgba(75, 85, 99, 0.6);
-  border-color: rgba(75, 85, 99, 0.3);
+  background: var(--border-strong);
   pointer-events: none;
+  box-shadow: none;
 }
 
 .swiper-nav-button svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
 }
 
 .slide-card {
-  background: #020617;
+  background: var(--bg-card);
   border-radius: 16px;
-  border: 1px solid #1f2937;
-  padding: 16px 16px 18px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--border);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
 }
 
 .slide-type {
@@ -1721,6 +1729,7 @@ const saveProgress = async () => {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #f97316;
+  font-weight: 600;
   margin-bottom: 4px;
 }
 
@@ -1728,6 +1737,7 @@ const saveProgress = async () => {
   font-size: 1.25rem;
   margin-bottom: 10px;
   line-height: 1.3;
+  color: var(--text);
 }
 
 .slide-image {
@@ -1764,7 +1774,7 @@ const saveProgress = async () => {
   flex-wrap: wrap;
   gap: 10px;
   padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.8);
+  background: #1a1a1a;
   border-radius: 0 0 12px 12px;
   margin: 0 0 12px;
 }
@@ -1814,25 +1824,25 @@ const saveProgress = async () => {
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
-  padding: 8px 12px;
-  background: rgba(249, 115, 22, 0.1);
-  border: 1px solid rgba(249, 115, 22, 0.3);
-  border-radius: 8px;
+  padding: 10px 14px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
   font-size: 0.85rem;
-  color: #f97316;
+  color: var(--accent);
 }
 
 .progress-hint.warning {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #ef4444;
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger);
   font-weight: 500;
 }
 
 .progress-hint.completed {
-  background: rgba(22, 163, 74, 0.1);
-  border-color: rgba(22, 163, 74, 0.3);
-  color: #16a34a;
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success);
 }
 
 .progress-icon {
@@ -1843,8 +1853,8 @@ const saveProgress = async () => {
 .reading-timer {
   margin-top: 12px;
   padding: 12px 14px;
-  background: rgba(249, 115, 22, 0.08);
-  border: 1px solid rgba(249, 115, 22, 0.3);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
   border-radius: 12px;
   display: flex;
   flex-wrap: wrap;
@@ -1875,14 +1885,14 @@ const saveProgress = async () => {
 
 .reading-timer-label {
   font-size: 0.85rem;
-  color: #f97316;
+  color: #ea580c;
   font-weight: 500;
 }
 
 .reading-timer-countdown {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #fb923c;
+  color: #f97316;
   font-family: "Courier New", monospace;
   min-width: 32px;
   text-align: right;
@@ -1891,37 +1901,37 @@ const saveProgress = async () => {
 .reading-timer-bar {
   width: 100%;
   height: 4px;
-  background: rgba(249, 115, 22, 0.15);
+  background: var(--accent-border);
   border-radius: 2px;
   overflow: hidden;
 }
 
 .reading-timer-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #f97316, #fb923c);
+  background: #f97316;
   border-radius: 2px;
   transition: width 1s linear;
 }
 
-/* Timer abgelaufen: Farbwechsel-Animation */
+/* Timer abgelaufen */
 .timer-done {
   animation: timerDoneFlash 0.6s ease-out;
 }
 
 @keyframes timerDoneFlash {
   0% {
-    background: rgba(249, 115, 22, 0.25);
-    border-color: rgba(249, 115, 22, 0.6);
+    background: #fff7ed;
+    border-color: #f97316;
     transform: scale(1.03);
   }
   50% {
-    background: rgba(22, 163, 74, 0.2);
-    border-color: rgba(22, 163, 74, 0.5);
+    background: #f0fdf4;
+    border-color: #22c55e;
     transform: scale(1.01);
   }
   100% {
-    background: rgba(22, 163, 74, 0.1);
-    border-color: rgba(22, 163, 74, 0.3);
+    background: #f0fdf4;
+    border-color: #bbf7d0;
     transform: scale(1);
   }
 }
@@ -1932,12 +1942,11 @@ const saveProgress = async () => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(180deg, rgba(2, 6, 23, 0.95), rgba(2, 6, 23, 0.98));
-  backdrop-filter: blur(10px);
-  border-top: 1px solid #1f2937;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
   padding: 12px 16px;
   z-index: 40;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-sm);
 }
 
 .bottom-bar-content {
@@ -1958,22 +1967,22 @@ const saveProgress = async () => {
 
 .progress-bar-container {
   flex: 1;
-  height: 8px;
-  background: #1f2937;
-  border-radius: 4px;
+  height: 6px;
+  background: var(--border-mid);
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #f97316, #ea580c);
-  border-radius: 4px;
+  background: #f97316;
+  border-radius: 3px;
   transition: width 0.3s ease;
 }
 
 .progress-text {
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: var(--text-muted);
   white-space: nowrap;
   font-weight: 500;
   margin: 0;
@@ -2015,9 +2024,8 @@ const saveProgress = async () => {
   .swiper-nav-button {
     top: auto;
     bottom: calc(108px + env(safe-area-inset-bottom, 0px));
-    width: 48px;
-    height: 48px;
-    border-width: 1.5px;
+    width: 44px;
+    height: 44px;
     transform: none;
   }
 
@@ -2070,7 +2078,7 @@ const saveProgress = async () => {
   }
 
   .slide-card {
-    padding: 14px 12px 16px;
+    padding: 16px 14px 18px;
   }
 
   .slide-title {
@@ -2098,34 +2106,33 @@ const saveProgress = async () => {
 }
 
 .finish-btn {
-  min-height: 48px;
-  padding: 12px 24px;
-  border-radius: 8px;
-  background: #16a34a;
+  min-height: 44px;
+  padding: 10px 24px;
+  border-radius: 10px;
+  background: #f97316;
   color: white;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+  transition: all 0.15s ease;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .finish-btn:hover {
-  background: #15803d;
+  background: #ea580c;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.5);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 }
 
 .finish-hint-compact {
-  min-height: 48px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  background: rgba(107, 114, 128, 0.15);
-  border: 1px solid rgba(107, 114, 128, 0.25);
-  color: #9ca3af;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border-mid);
+  color: var(--text-faint);
   font-size: 0.8rem;
   text-align: center;
   white-space: nowrap;
@@ -2135,9 +2142,9 @@ const saveProgress = async () => {
 .error-box {
   padding: 20px 24px;
   border-radius: 14px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
   font-size: 1rem;
   text-align: center;
   max-width: 420px;
@@ -2149,7 +2156,7 @@ const saveProgress = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
+  background: var(--overlay-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2158,13 +2165,13 @@ const saveProgress = async () => {
 }
 
 .celebration-modal {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: var(--bg-card);
   border-radius: 24px;
-  border: 2px solid #f97316;
+  border: none;
   padding: 48px 40px;
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 20px 60px rgba(249, 115, 22, 0.4);
+  box-shadow: var(--shadow-lg);
   animation: modalBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   position: relative;
   z-index: 10000;
@@ -2175,11 +2182,9 @@ const saveProgress = async () => {
     transform: scale(0.3) rotate(-10deg);
     opacity: 0;
   }
-
   50% {
     transform: scale(1.05) rotate(2deg);
   }
-
   100% {
     transform: scale(1) rotate(0deg);
     opacity: 1;
@@ -2197,47 +2202,26 @@ const saveProgress = async () => {
 }
 
 @keyframes iconBounce {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-
-  100% {
-    transform: translateY(-10px) scale(1.1);
-  }
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-10px) scale(1.1); }
 }
 
 .celebration-title {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 800;
-  background: linear-gradient(90deg, #f97316, #fb923c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #f97316;
   margin-bottom: 16px;
-  animation: titleGlow 2s ease-in-out infinite;
-}
-
-@keyframes titleGlow {
-
-  0%,
-  100% {
-    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.6));
-  }
-
-  50% {
-    filter: drop-shadow(0 0 16px rgba(249, 115, 22, 0.9));
-  }
 }
 
 .celebration-message {
   font-size: 1.1rem;
   line-height: 1.6;
-  color: #d1d5db;
+  color: var(--text-muted);
   margin-bottom: 32px;
 }
 
 .celebration-message strong {
-  color: #f97316;
+  color: var(--text);
   font-weight: 600;
 }
 
@@ -2245,19 +2229,19 @@ const saveProgress = async () => {
   min-height: 48px;
   padding: 14px 32px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #f97316, #ea580c);
+  background: #f97316;
   color: white;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.4);
+  transition: all 0.15s ease;
 }
 
 .celebration-btn:hover {
+  background: #ea580c;
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(249, 115, 22, 0.6);
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.3);
 }
 
 .celebration-btn:active {
@@ -2301,7 +2285,7 @@ const saveProgress = async () => {
   width: 90px;
   height: 90px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.4));
+  filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.3));
   transition: transform 0.3s ease;
 }
 
@@ -2310,26 +2294,19 @@ const saveProgress = async () => {
 }
 
 @keyframes fireflyFloat {
-
-  0%,
-  100% {
-    transform: translateY(0) rotate(-2deg);
-  }
-
-  50% {
-    transform: translateY(-12px) rotate(2deg);
-  }
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-12px) rotate(2deg); }
 }
 
 .firefly-speech-bubble {
-  background: linear-gradient(135deg, #f97316, #ea580c);
+  background: #f97316;
   color: white;
   padding: 10px 14px;
   border-radius: 14px;
   font-size: 0.85rem;
   font-weight: 500;
   line-height: 1.35;
-  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.4);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
   position: relative;
   max-width: 240px;
   animation: bubblePop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -2345,19 +2322,12 @@ const saveProgress = async () => {
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-top: 10px solid #ea580c;
+  border-top: 10px solid #f97316;
 }
 
 @keyframes bubblePop {
-  0% {
-    transform: scale(0.8) translateY(10px);
-    opacity: 0;
-  }
-
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
+  0% { transform: scale(0.8) translateY(10px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 @media (max-width: 768px) {
@@ -2384,17 +2354,17 @@ const saveProgress = async () => {
     right: 30px;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-top: 8px solid #ea580c;
+    border-top: 8px solid #f97316;
     bottom: -7px;
   }
 }
 
 .interactive-box {
   margin-top: 12px;
-  padding: 12px;
-  border: 1px solid #1f2937;
+  padding: 14px;
+  border: 1px solid var(--border);
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(17, 24, 39, 0.65), rgba(2, 6, 23, 0.65));
+  background: var(--bg-card-alt);
 }
 
 .interactive-grid {
@@ -2411,15 +2381,15 @@ const saveProgress = async () => {
 }
 
 .interactive-btn {
-  border: 1px solid #334155;
-  background: rgba(2, 6, 23, 0.7);
-  color: #e5e7eb;
+  border: 1px solid var(--border-mid);
+  background: var(--bg-card);
+  color: var(--text-secondary);
   width: 100%;
   min-height: 48px;
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+  transition: all 0.12s ease;
   text-align: left;
   font-size: 0.9rem;
   line-height: 1.4;
@@ -2427,66 +2397,72 @@ const saveProgress = async () => {
 
 .interactive-btn:hover {
   transform: translateY(-1px);
-  border-color: #f97316;
-  background: rgba(15, 23, 42, 0.9);
+  border-color: var(--accent);
+  background: var(--accent-bg);
 }
 
 .interactive-feedback {
   margin-top: 10px;
   padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #334155;
-  background: rgba(2, 6, 23, 0.7);
-  color: #e5e7eb;
+  border-radius: 10px;
+  border: 1px solid var(--border-mid);
+  background: var(--bg-card);
+  color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
 .interactive-feedback.good {
-  border-color: rgba(34, 197, 94, 0.6);
+  border-color: var(--success-border);
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .interactive-feedback.bad {
-  border-color: rgba(239, 68, 68, 0.6);
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 .interactive-feedback.danger {
-  border-color: rgba(245, 158, 11, 0.7);
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 .quiz-card {
-  padding: 10px;
-  border: 1px solid #1f2937;
+  padding: 12px;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: rgba(2, 6, 23, 0.5);
+  background: var(--bg-card);
   margin-top: 10px;
 }
 
 .quiz-question {
   font-weight: 650;
-  color: #f3f4f6;
+  color: var(--text);
   font-size: 0.95rem;
 }
 
 .rich-body {
   margin-top: 6px;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.5;
+  color: var(--text-secondary);
+  line-height: 1.6;
   font-size: 0.95rem;
   overflow-wrap: anywhere;
 }
 
 .rich-body p {
   margin: 8px 0;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.5;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
 .rich-body ul,
 .rich-body ol {
   margin: 8px 0;
   padding-left: 16px;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.5;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
 .rich-body li {
@@ -2494,7 +2470,7 @@ const saveProgress = async () => {
 }
 
 .rich-body strong {
-  color: rgba(255, 255, 255, 1);
+  color: var(--text);
   font-weight: 650;
 }
 
@@ -2503,7 +2479,7 @@ const saveProgress = async () => {
 }
 
 .rich-body code {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-card-alt);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: monospace;
@@ -2511,7 +2487,7 @@ const saveProgress = async () => {
 }
 
 .rich-body pre {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-card-alt);
   padding: 12px;
   border-radius: 8px;
   overflow-x: auto;
@@ -2527,7 +2503,7 @@ const saveProgress = async () => {
 .rich-body h2,
 .rich-body h3,
 .rich-body h4 {
-  color: rgba(255, 255, 255, 1);
+  color: var(--text);
   margin: 12px 0 8px 0;
   font-weight: 650;
   line-height: 1.3;
@@ -2550,20 +2526,20 @@ const saveProgress = async () => {
 }
 
 .rich-body blockquote {
-  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  border-left: 3px solid #f97316;
   padding-left: 12px;
   margin: 10px 0;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--text-muted);
   font-style: italic;
 }
 
 .rich-body a {
-  color: #60a5fa;
+  color: #f97316;
   text-decoration: underline;
 }
 
 .rich-body a:hover {
-  color: #93c5fd;
+  color: #ea580c;
 }
 
 .rich-body img {
@@ -2572,23 +2548,22 @@ const saveProgress = async () => {
   height: auto;
 }
 
-/* Keep old custom styles for backwards compatibility */
 .rich-warn {
-  border: 1px solid rgba(245, 158, 11, 0.55);
-  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid var(--warn-border);
+  background: var(--warn-bg);
   padding: 10px;
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--warn-text);
   margin: 8px 0;
   font-size: 0.9rem;
 }
 
 .rich-check {
-  border: 1px solid rgba(34, 197, 94, 0.55);
-  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid var(--success-border);
+  background: var(--success-bg);
   padding: 10px;
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--success);
   margin: 8px 0;
   font-size: 0.9rem;
 }
@@ -2621,7 +2596,6 @@ const saveProgress = async () => {
   object-fit: contain;
 }
 
-/* Mobile: wieder untereinander */
 @media (max-width: 720px) {
   .content-layout--side {
     grid-template-columns: 1fr;
@@ -2705,13 +2679,9 @@ const saveProgress = async () => {
 }
 
 .interactive-btn.active {
-  border-color: #f97316;
-  background: rgba(249, 115, 22, 0.15);
+  border-color: var(--accent);
+  background: var(--accent-bg);
 }
-
-
-
-
 
 .drag-items {
   display: grid;
@@ -2721,10 +2691,10 @@ const saveProgress = async () => {
 }
 
 .drag-item {
-  border: 2px solid rgba(255, 255, 255, 0.18);
+  border: 2px solid var(--border-mid);
   border-radius: 12px;
   padding: 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-card);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2747,7 +2717,7 @@ const saveProgress = async () => {
 .drag-label {
   font-size: 0.85rem;
   text-align: center;
-  opacity: 0.95;
+  color: var(--text-secondary);
   line-height: 1.3;
 }
 
@@ -2760,16 +2730,17 @@ const saveProgress = async () => {
 
 .dropzone {
   min-height: 150px;
-  border: 2px dashed rgba(255, 255, 255, 0.25);
+  border: 2px dashed var(--border-strong);
   border-radius: 14px;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-card-alt);
 }
 
 .dropzone-title {
   font-weight: 700;
   margin-bottom: 8px;
   font-size: 0.9rem;
+  color: var(--text);
 }
 
 .dropzone-items {
@@ -2795,21 +2766,18 @@ const saveProgress = async () => {
   width: 100%;
   max-width: 800px;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-
-/* NUR für das Vergleichsbild (Kapitel 4.1) */
 .bigCompare {
   display: block;
   width: min(820px, 100%);
   max-width: 820px;
   margin: 22px auto 0 auto;
   border-radius: 18px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-/* wenn bigCompare, dann media-container zentrieren und volle Breite geben */
 .content-media:has(.bigCompare) {
   justify-content: center;
 }

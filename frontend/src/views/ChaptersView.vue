@@ -226,9 +226,9 @@ const chaptersWithProgress = computed(() => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+  background: var(--bg);
   padding: 64px 24px 120px;
-  color: #f8fafc;
+  color: var(--text);
   position: relative;
 }
 
@@ -237,12 +237,10 @@ const chaptersWithProgress = computed(() => {
   font-weight: 800;
   margin-bottom: 12px;
   text-align: center;
-  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text);
   letter-spacing: -0.02em;
 }
+
 .page-logo {
   position: absolute;
   top: 16px;
@@ -257,12 +255,12 @@ const chaptersWithProgress = computed(() => {
 .info {
   text-align: center;
   margin-top: 32px;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 1.1rem;
 }
 
 .info.error {
-  color: #f87171;
+  color: #dc2626;
 }
 
 .chapters-grid {
@@ -276,7 +274,7 @@ const chaptersWithProgress = computed(() => {
 @media (min-width: 768px) {
   .chapters-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 32px;
+    gap: 28px;
   }
 }
 
@@ -287,15 +285,14 @@ const chaptersWithProgress = computed(() => {
 }
 
 .chapter-card {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
-  border-radius: 24px;
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--border);
   padding: 0;
   position: relative;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
   min-height: 100%;
 }
 
@@ -305,16 +302,15 @@ const chaptersWithProgress = computed(() => {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+  height: 3px;
+  background: #f97316;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .chapter-card:hover {
-  transform: translateY(-8px);
-  border-color: rgba(148, 163, 184, 0.3);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(96, 165, 250, 0.1);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
 
 .chapter-card:hover::before {
@@ -327,7 +323,7 @@ const chaptersWithProgress = computed(() => {
   right: 24px;
   font-size: 6rem;
   font-weight: 900;
-  color: rgba(148, 163, 184, 0.04);
+  color: rgba(249, 115, 22, 0.05);
   line-height: 1;
   pointer-events: none;
   z-index: 0;
@@ -352,7 +348,7 @@ const chaptersWithProgress = computed(() => {
 .chapter-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text);
   line-height: 1.3;
   letter-spacing: -0.01em;
 }
@@ -379,35 +375,36 @@ const chaptersWithProgress = computed(() => {
 }
 
 .status-not-started {
-  background: rgba(148, 163, 184, 0.1);
-  color: #cbd5e1;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: var(--bg-card-alt);
+  color: var(--text-muted);
+  border: 1px solid var(--border-mid);
 }
 
 .status-in-progress {
-  background: rgba(234, 179, 8, 0.1);
-  color: #fbbf24;
-  border: 1px solid rgba(234, 179, 8, 0.3);
+  background: var(--accent-bg);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
 }
 
 .status-done {
-  background: rgba(34, 197, 94, 0.1);
-  color: #4ade80;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
 }
 
 .chapter-description {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-bottom: auto;
   flex-grow: 1;
 }
+
 .chapter-footer {
   display: flex;
   justify-content: flex-end;
   padding-top: 16px;
-  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  border-top: 1px solid var(--border);
   margin-top: auto;
 }
 
@@ -417,10 +414,11 @@ const chaptersWithProgress = computed(() => {
   gap: 8px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #60a5fa;
+  color: #f97316;
   transition: gap 0.2s ease;
   line-height: 1;
 }
+
 .chapter-card:hover .chapter-action {
   gap: 12px;
 }
@@ -449,19 +447,19 @@ const chaptersWithProgress = computed(() => {
   width: 48px;
   height: 48px;
   border-radius: 999px;
-  border: 2px solid #60a5fa;
-  background: #020617;
+  border: 2px solid #f97316;
+  background: var(--bg-card);
   cursor: pointer;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.6);
+  box-shadow: var(--shadow-md);
 }
 
 .user-menu-panel {
   margin-bottom: 8px;
   padding: 12px 14px;
-  border-radius: 16px;
-  background: #020617;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.8);
+  border-radius: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
   min-width: 190px;
   max-width: min(280px, calc(100vw - 32px));
 }
@@ -470,26 +468,26 @@ const chaptersWithProgress = computed(() => {
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 8px;
-  color: #e5e7eb;
+  color: var(--text);
 }
 
 .signout-btn {
   width: 100%;
-  min-height: 44px;
-  padding: 10px 12px;
-  border-radius: 999px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 10px;
   border: none;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  background: #ef4444;
-  color: white;
-  transition: background 0.2s ease, transform 0.05s;
+  background: var(--danger-bg);
+  color: var(--danger);
+  transition: all 0.15s ease;
 }
 
 .signout-btn:hover {
-  background: #b91c1c;
-  transform: translateY(-1px);
+  background: #dc2626;
+  color: #fff;
 }
 
 .locked {
@@ -512,11 +510,16 @@ const chaptersWithProgress = computed(() => {
   min-height: 48px;
   padding: 14px 24px;
   font-size: 1.1rem;
-  background: #22c55e;
+  background: #f97316;
   color: white;
   border-radius: 12px;
   border: none;
   cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.certificate-box button:hover {
+  background: #ea580c;
 }
 
 @media (max-width: 767px) {
@@ -551,7 +554,7 @@ const chaptersWithProgress = computed(() => {
   }
 
   .chapter-card {
-    border-radius: 20px;
+    border-radius: 14px;
   }
 
   .chapter-number {

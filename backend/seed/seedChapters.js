@@ -1,7 +1,6 @@
 // seed/seedChapters.js
 import Chapter from '../models/chapters.js';
 import ChapterSlide from '../models/ChapterSlide.js';
-import UserProgress from '../models/userProgress.js';
 import { chaptersSeedData } from './chaptersData.js';
 
 export const seedChapters = async () => {
@@ -9,7 +8,6 @@ export const seedChapters = async () => {
 
   // Alles löschen – KEIN TRUNCATE, nur normales DELETE
   await ChapterSlide.destroy({ where: {} });
-  await UserProgress.destroy({ where: {} });
   await Chapter.destroy({ where: {} });
 
   // Neu aufbauen
